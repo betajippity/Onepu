@@ -37,7 +37,8 @@ extern inline rigidBody createRigidBody(const float& mass, const Vector3f& cente
 							  			const Vector3f& gyrationRadii, bool fixed);
 extern inline rigidBody createRigidBody(const float& mass, const Vector3f& centerOfMass, 
 							  			const Matrix3f& inertia, bool fixed);
-extern inline rigidBody joinRigidBodies(const rigidBody& rb1, const rigidBody& rb2);
+extern inline rigidBody joinRigidBodies(const rigidBody& rb1, const rigidBody& rb2, 
+										const SpatialTransform6f& transform);
 
 //====================================
 // Function Implementations
@@ -82,10 +83,25 @@ rigidBody createRigidBody(const float& mass, const Vector3f& centerOfMass, const
 }
 
 //Creates a single body that behaves the same as if the two given bodies were connected by a fixed joint
-rigidBody joinRigidBodies(const rigidBody& rb1, const rigidBody& rb2){
-
+//Transform is frame transformation from rb2's origin to rb1's origin
+rigidBody joinRigidBodies(const rigidBody& rb1, const rigidBody& rb2, const SpatialTransform6f& transform){
+	float newMass = rb1.mass + rb2.mass;
+	Vector3f rb2CenterOfMass = (transform.rotation.transpose() * rb2.centerOfMass) + transform.translation;
+	Vector3f newCenterOfMass = (1.0f / newMass ) * 
+							   (rb1.mass * rb1.centerOfMass + rb2.mass * rb2CenterOfMass);
+	Matrix3f rb2Inertia = rb2.spatialInertia.block<3,3>(0,0);
+	//Transform inertia from rb2 origin to rb2 centerOfMAss
+	Matrix3f rb2COMCrossed = vectorCrossMatrix(rb2.centerOfMass);
+	Matrix3f rb2InertiaCOM = rb2Inertia - rb2.mass * rb2COMCrossed * rb2COMCrossed.transpose();
+	//Rotate rb2 inertia to align with frame of rb1, then transform rb2 inertia to origin frame of rb1
+	Matrix3f rb2InertiaCOMRotated = transform.rotation.transpose() * rb2InertiaCOM * transform.rotation;
+	Matrix3f rb2InertiaCOMRotatedToRb1 = parallelAxis(rb2InertiaCOMRotated, rb2.mass, rb2CenterOfMass);
+	//Sum inertias and transform result to new center of mass
+	Matrix3f sumOfIntertias = rb1.spatialInertia.block<3,3>(0,0) + rb2InertiaCOMRotatedToRb1;
+	Matrix3f newCOMCrossed = vectorCrossMatrix(newCenterOfMass);
+	Matrix3f newInertia = sumOfIntertias - (newMass * newCOMCrossed * newCOMCrossed.transpose()); 
+	return createRigidBody(newMass, newCenterOfMass, newInertia, rb1.fixed);
 }
-
 }
 
 #endif

@@ -25,10 +25,17 @@ extern inline Matrix3f createMatrix3f(const float& v00, const float& v01, const 
 									  const float& v20, const float& v21, const float& v22);
 extern inline Matrix3f createMatrix3f(const Vector3f& v0, const Vector3f& v1, const Vector3f& v2);
 extern inline Matrix3f vectorCrossMatrix(const Vector3f& v);
+extern inline Matrix3f parallelAxis(const Matrix3f& inertia, const float& mass, 
+									const Vector3f& centerOfMass);
 
 //====================================
 // Function Implementations
 //====================================
+
+Matrix3f parallelAxis(const Matrix3f& inertia, const float& mass, const Vector3f& centerOfMass){
+	Matrix3f centerOfMassCrossed = vectorCrossMatrix(centerOfMass);
+	return inertia + (mass * centerOfMassCrossed * centerOfMassCrossed.transpose());
+}
 
 Matrix3f vectorCrossMatrix(const Vector3f& v){
 	return createMatrix3f(0.0f, -v[2], v[1],
