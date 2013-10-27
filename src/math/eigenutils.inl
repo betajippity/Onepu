@@ -15,6 +15,7 @@
 using namespace std;
 using namespace Eigen;
 
+namespace mathCore {
 //====================================
 // Struct and Function Declarations
 //====================================
@@ -23,10 +24,17 @@ extern inline Matrix3f createMatrix3f(const float& v00, const float& v01, const 
 									  const float& v10, const float& v11, const float& v12,
 									  const float& v20, const float& v21, const float& v22);
 extern inline Matrix3f createMatrix3f(const Vector3f& v0, const Vector3f& v1, const Vector3f& v2);
+extern inline Matrix3f vectorCrossMatrix(const Vector3f& v);
 
 //====================================
 // Function Implementations
 //====================================
+
+Matrix3f vectorCrossMatrix(const Vector3f& v){
+	return createMatrix3f(0.0f, -v[2], v[1],
+						 v[2], 0.0f, -v[0],
+						 -v[1], v[0], 0.0f);
+}
 
 Matrix3f createMatrix3f(const float& v00, const float& v01, const float& v02,
 					    const float& v10, const float& v11, const float& v12,
@@ -44,6 +52,7 @@ Matrix3f createMatrix3f(const Vector3f& v0, const Vector3f& v1, const Vector3f& 
 	m(1,0) = v1[0]; m(1,1) = v1[1]; m(1,2) = v1[2];
 	m(2,0) = v2[0]; m(2,1) = v2[1]; m(2,2) = v2[2];
 	return m;
+}
 }
 
 #endif

@@ -16,7 +16,7 @@
 
 using namespace std;
 using namespace Eigen;
-using namespace spatialmathCore;
+using namespace mathCore;
 
 namespace rigidbodyCore {
 //====================================
