@@ -8,6 +8,7 @@
 #include <Eigen/Core>
 #include "math/spatialmath.inl"
 #include "rigidbody/rigidbody.inl"
+#include "rigidbody/joint.inl"
 
 using namespace std;
 using namespace Eigen;

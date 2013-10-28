@@ -10,7 +10,7 @@
 
 #include <Eigen/Core>
 #include <Eigen/StdVector>
-#include "eigenutils.inl"
+#include "eigenmathutils.inl"
 #include "../utilities/utilities.h"
 
 #define EIGEN_DEFAULT_TO_ROW_MAJOR

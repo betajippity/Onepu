@@ -8,7 +8,7 @@
 #define RIGIDBODY_INL
 
 #include <Eigen/Core>
-#include "../math/eigenutils.inl"
+#include "../math/eigenmathutils.inl"
 #include "../math/spatialmath.inl"
 #include "../utilities/utilities.h"
 

@@ -1,11 +1,11 @@
 // Onepu: Featherstone's Articulated Body Algorithm implementation
 // Written by Yining Karl Li
 //
-// File: mathutils.inl
+// File: eigenmathutils.inl
 // A thin wrapper for Eigen that makes some matrix and vector operations easier to deal with
 
-#ifndef EIGENUTILS_INL
-#define EIGENUTILS_INL
+#ifndef EIGENMATHUTILS_INL
+#define EIGENMATHUTILS_INL
 
 #include <Eigen/Core>
 #include "../utilities/utilities.h"
