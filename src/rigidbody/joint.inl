@@ -17,7 +17,7 @@
 
 using namespace std;
 using namespace Eigen;
-using namespace mathCore;
+using namespace spatialmathCore;
 
 namespace rigidbodyCore {
 
@@ -39,45 +39,42 @@ enum jointType {
 
 //Defines a single joint and associated properties
 struct joint{
-	SpatialVector6f axis0;
-	SpatialVector6f axis1;
-	SpatialVector6f axis2;
-	SpatialVector6f axis3;
-	SpatialVector6f axis4;
-	SpatialVector6f axis5;
+	svec6 axis0;
+	svec6 axis1;
+	svec6 axis2;
+	svec6 axis3;
+	svec6 axis4;
+	svec6 axis5;
 	jointType type;
 	int degreesOfFreedom;
 };
 
 //Forward declarations for externed inlineable methods
-extern inline joint createJoint(const vector<SpatialVector6f>& axes, const jointType& type);
-extern inline joint createJoint(const SpatialVector6f& axis, const jointType& type);
-extern inline joint createJoint(const SpatialVector6f& axis0);
-extern inline joint createJoint(const SpatialVector6f& axis0, const SpatialVector6f& axis1);
-extern inline joint createJoint(const SpatialVector6f& axis0, const SpatialVector6f& axis1,
-								const SpatialVector6f& axis2);
-extern inline joint createJoint(const SpatialVector6f& axis0, const SpatialVector6f& axis1,
-								const SpatialVector6f& axis2, const SpatialVector6f& axis3);
-extern inline joint createJoint(const SpatialVector6f& axis0, const SpatialVector6f& axis1,
-								const SpatialVector6f& axis2, const SpatialVector6f& axis3, 
-								const SpatialVector6f& axis4);
-extern inline joint createJoint(const SpatialVector6f& axis0, const SpatialVector6f& axis1,
-								const SpatialVector6f& axis2, const SpatialVector6f& axis3, 
-								const SpatialVector6f& axis4, const SpatialVector6f& axis5);
+extern inline joint createJoint(const vector<svec6>& axes, const jointType& type);
+extern inline joint createJoint(const svec6& axis, const jointType& type);
+extern inline joint createJoint(const svec6& axis0);
+extern inline joint createJoint(const svec6& axis0, const svec6& axis1);
+extern inline joint createJoint(const svec6& axis0, const svec6& axis1, const svec6& axis2);
+extern inline joint createJoint(const svec6& axis0, const svec6& axis1, const svec6& axis2, 
+								const svec6& axis3);
+extern inline joint createJoint(const svec6& axis0, const svec6& axis1, const svec6& axis2, 
+								const svec6& axis3, const svec6& axis4);
+extern inline joint createJoint(const svec6& axis0, const svec6& axis1, const svec6& axis2, 
+								const svec6& axis3, const svec6& axis4, const svec6& axis5);
 inline void blankEmptyAxes(joint& j);
 
 //====================================
 // Function Implementations
 //====================================
 
-joint createJoint(const SpatialVector6f& axis, const jointType& type){
+joint createJoint(const svec6& axis, const jointType& type){
 	joint j;
 	j.degreesOfFreedom = 1;
-	SpatialVector6f newAxis = axis;
+	svec6 newAxis = axis;
 	if(type==jointRevolte){
-		newAxis = SpatialVector6f(axis[0], axis[1], axis[2], 0.0f, 0.0f, 0.0f);
+		newAxis = svec6(axis[0], axis[1], axis[2], 0.0f, 0.0f, 0.0f);
 	}else if(type==jointPrismatic){
-		newAxis = SpatialVector6f(0.0f, 0.0f, 0.0f, axis[0], axis[1], axis[2]);
+		newAxis = svec6(0.0f, 0.0f, 0.0f, axis[0], axis[1], axis[2]);
 	}
 	j.axis0 = newAxis;
 	blankEmptyAxes(j);
@@ -86,16 +83,16 @@ joint createJoint(const SpatialVector6f& axis, const jointType& type){
 
 void blankEmptyAxes(joint& j){
 	for(int i=j.degreesOfFreedom; i<6; i++){
-		if(i==0){ j.axis0 = SpatialVector6f(-1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f); }
-		else if(i==1){ j.axis1 = SpatialVector6f(-1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f); }
-		else if(i==2){ j.axis2 = SpatialVector6f(-1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f); }
-		else if(i==3){ j.axis3 = SpatialVector6f(-1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f); }
-		else if(i==4){ j.axis4 = SpatialVector6f(-1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f); }
-		else if(i==5){ j.axis5 = SpatialVector6f(-1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f); }
+		if(i==0){ j.axis0 = svec6(-1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f); }
+		else if(i==1){ j.axis1 = svec6(-1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f); }
+		else if(i==2){ j.axis2 = svec6(-1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f); }
+		else if(i==3){ j.axis3 = svec6(-1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f); }
+		else if(i==4){ j.axis4 = svec6(-1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f); }
+		else if(i==5){ j.axis5 = svec6(-1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f); }
 	}
 }
 
-joint createJoint(const SpatialVector6f& axis0){
+joint createJoint(const svec6& axis0){
 	joint j;
 	j.degreesOfFreedom = 1;
 	j.type = joint1DoF;
@@ -104,7 +101,7 @@ joint createJoint(const SpatialVector6f& axis0){
 	return j;
 }
 
-joint createJoint(const SpatialVector6f& axis0, const SpatialVector6f& axis1){
+joint createJoint(const svec6& axis0, const svec6& axis1){
 	joint j;
 	j.degreesOfFreedom = 2;
 	j.type = joint2DoF;
@@ -113,7 +110,7 @@ joint createJoint(const SpatialVector6f& axis0, const SpatialVector6f& axis1){
 	return j;
 }
 
-joint createJoint(const SpatialVector6f& axis0, const SpatialVector6f& axis1, const SpatialVector6f& axis2){
+joint createJoint(const svec6& axis0, const svec6& axis1, const svec6& axis2){
 	joint j;
 	j.degreesOfFreedom = 3;
 	j.type = joint3DoF;
@@ -122,8 +119,7 @@ joint createJoint(const SpatialVector6f& axis0, const SpatialVector6f& axis1, co
 	return j;
 }
 
-joint createJoint(const SpatialVector6f& axis0, const SpatialVector6f& axis1, const SpatialVector6f& axis2,
-				  const SpatialVector6f& axis3){
+joint createJoint(const svec6& axis0, const svec6& axis1, const svec6& axis2, const svec6& axis3){
 	joint j;
 	j.degreesOfFreedom = 4;
 	j.type = joint4DoF;
@@ -133,8 +129,8 @@ joint createJoint(const SpatialVector6f& axis0, const SpatialVector6f& axis1, co
 	return j;
 }
 
-joint createJoint(const SpatialVector6f& axis0, const SpatialVector6f& axis1, const SpatialVector6f& axis2,
-				  const SpatialVector6f& axis3, const SpatialVector6f& axis4){
+joint createJoint(const svec6& axis0, const svec6& axis1, const svec6& axis2, const svec6& axis3, 
+				  const svec6& axis4){
 	joint j;
 	j.degreesOfFreedom = 5;
 	j.type = joint5DoF;
@@ -144,8 +140,8 @@ joint createJoint(const SpatialVector6f& axis0, const SpatialVector6f& axis1, co
 	return j;
 }
 
-joint createJoint(const SpatialVector6f& axis0, const SpatialVector6f& axis1, const SpatialVector6f& axis2,
-				  const SpatialVector6f& axis3, const SpatialVector6f& axis4, const SpatialVector6f& axis5){
+joint createJoint(const svec6& axis0, const svec6& axis1, const svec6& axis2, const svec6& axis3, 
+				  const svec6& axis4, const svec6& axis5){
 	joint j;
 	j.degreesOfFreedom = 6;
 	j.type = joint6DoF;
@@ -155,8 +151,7 @@ joint createJoint(const SpatialVector6f& axis0, const SpatialVector6f& axis1, co
 	return j;
 }
 
-
-joint createJoint(const vector<SpatialVector6f>& axes, const jointType& type){
+joint createJoint(const vector<svec6>& axes, const jointType& type){
 	joint j;
 	j.degreesOfFreedom = axes.size();
 	for(int i=0; i<j.degreesOfFreedom; i++){

@@ -18,86 +18,78 @@
 using namespace std;
 using namespace Eigen;
 
-namespace mathCore {
+namespace spatialmathCore {
 //====================================
 // Class and Function Declarations
 //====================================
-class SpatialVector6f;
-class SpatialMatrix6f;
-class SpatialInertia6f;
-class SpatialTransform6f;
+class svec6;
+class smat6;
+class sinertia6;
+class stransform6;
 
-extern inline SpatialInertia6f spatialMatrixToSpatialInertia(const SpatialMatrix6f& m);
-extern inline SpatialMatrix6f spatialInertiaToSpatialMatrix(const SpatialInertia6f& I);
-extern inline SpatialVector6f applySpatialTransformToSpatialVector(const SpatialVector6f& v, 
-																   const SpatialTransform6f& t);
-extern inline SpatialInertia6f applySpatialTransformToSpatialInertia(const SpatialInertia6f& I,
-																	 const SpatialTransform6f& t);
-extern inline SpatialVector6f applySpatialTransformToTranspose(const SpatialVector6f& v, 
-															   const SpatialTransform6f& t);
-extern inline SpatialVector6f applySpatialTransformToAdjoint(const SpatialVector6f& v, 
-															 const SpatialTransform6f& t);
-extern inline SpatialMatrix6f spatialTransformToSpatialMatrix(const SpatialTransform6f& t);
-extern inline SpatialMatrix6f spatialTransformToSpatialMatrixAdjoint(const SpatialTransform6f& t);
-extern inline SpatialMatrix6f spatialTransformToSpatialMatrixTranspose(const SpatialTransform6f& t);
+extern inline sinertia6 spatialMatrixToSpatialInertia(const smat6& m);
+extern inline smat6 spatialInertiaToSpatialMatrix(const sinertia6& I);
+extern inline svec6 applySpatialTransformToSpatialVector(const svec6& v, const stransform6& t);
+extern inline sinertia6 applySpatialTransformToSpatialInertia(const sinertia6& I, const stransform6& t);
+extern inline svec6 applySpatialTransformToTranspose(const svec6& v, const stransform6& t);
+extern inline svec6 applySpatialTransformToAdjoint(const svec6& v, const stransform6& t);
+extern inline smat6 spatialTransformToSpatialMatrix(const stransform6& t);
+extern inline smat6 spatialTransformToSpatialMatrixAdjoint(const stransform6& t);
+extern inline smat6 spatialTransformToSpatialMatrixTranspose(const stransform6& t);
 
 //====================================
 // Class Implementations
 //====================================
 
 //6 element vector as described in Featherstone's algorithm. Extended from an Eigen VectorXf.
-class SpatialVector6f : public Eigen::Matrix<float, 6, 1>{
+class svec6 : public Eigen::Matrix<float, 6, 1>{
 	public:
 		typedef Eigen::Matrix<float, 6, 1> Base;
 
 		template<typename OtherDerived>
-			SpatialVector6f(const Eigen::MatrixBase<OtherDerived>& other)
-			: Eigen::Matrix<float, 6, 1>(other){}
+			svec6(const Eigen::MatrixBase<OtherDerived>& other): Eigen::Matrix<float, 6, 1>(other){}
 
-		template<typename OtherDerived> SpatialVector6f& operator=
-										(const Eigen::MatrixBase<OtherDerived>& other){
+		template<typename OtherDerived> svec6& operator= (const Eigen::MatrixBase<OtherDerived>& other){
 			this->Base::operator=(other);
 			return *this;
 		}
 
-		EIGEN_STRONG_INLINE SpatialVector6f(){}
+		EIGEN_STRONG_INLINE svec6(){}
 
-		EIGEN_STRONG_INLINE SpatialVector6f(const float& v0, const float& v1, const float& v2,
-											const float& v3, const float& v4, const float& v5){
+		EIGEN_STRONG_INLINE svec6(const float& v0, const float& v1, const float& v2,
+								  const float& v3, const float& v4, const float& v5){
 			Base::_check_template_params();
 			(*this) << v0, v1, v2, v3, v4, v5;
 		}
 };
 
 //6x6 spatial matrix as described in Featherstone's algorithm. Extended from an Eigen MatrixXf.
-class SpatialMatrix6f : public Eigen::Matrix<float, 6, 6>{
+class smat6 : public Eigen::Matrix<float, 6, 6>{
 	public:
 		typedef Eigen::Matrix<float, 6, 6> Base;
 
 		template<typename OtherDerived>
-			SpatialMatrix6f(const Eigen::MatrixBase<OtherDerived>& other)
-			: Eigen::Matrix<float, 6, 6>(other){}
+			smat6(const Eigen::MatrixBase<OtherDerived>& other): Eigen::Matrix<float, 6, 6>(other){}
 
-		template<typename OtherDerived> SpatialMatrix6f& operator=
-										(const Eigen::MatrixBase<OtherDerived>& other){
+		template<typename OtherDerived> smat6& operator= (const Eigen::MatrixBase<OtherDerived>& other){
 			this->Base::operator=(other);
 			return *this;
 		}
 
-		EIGEN_STRONG_INLINE SpatialMatrix6f(){}
+		EIGEN_STRONG_INLINE smat6(){}
 
-		EIGEN_STRONG_INLINE SpatialMatrix6f(const Scalar& m00, const Scalar& m01, const Scalar& m02, 
-											const Scalar& m03, const Scalar& m04, const Scalar& m05,
-											const Scalar& m10, const Scalar& m11, const Scalar& m12, 
-											const Scalar& m13, const Scalar& m14, const Scalar& m15,
-											const Scalar& m20, const Scalar& m21, const Scalar& m22, 
-											const Scalar& m23, const Scalar& m24, const Scalar& m25,
-											const Scalar& m30, const Scalar& m31, const Scalar& m32, 
-											const Scalar& m33, const Scalar& m34, const Scalar& m35,
-											const Scalar& m40, const Scalar& m41, const Scalar& m42, 
-											const Scalar& m43, const Scalar& m44, const Scalar& m45,
-											const Scalar& m50, const Scalar& m51, const Scalar& m52, 
-											const Scalar& m53, const Scalar& m54, const Scalar& m55){
+		EIGEN_STRONG_INLINE smat6(const Scalar& m00, const Scalar& m01, const Scalar& m02, 
+								  const Scalar& m03, const Scalar& m04, const Scalar& m05,
+								  const Scalar& m10, const Scalar& m11, const Scalar& m12, 
+								  const Scalar& m13, const Scalar& m14, const Scalar& m15,
+								  const Scalar& m20, const Scalar& m21, const Scalar& m22, 
+								  const Scalar& m23, const Scalar& m24, const Scalar& m25,
+								  const Scalar& m30, const Scalar& m31, const Scalar& m32, 
+								  const Scalar& m33, const Scalar& m34, const Scalar& m35,
+								  const Scalar& m40, const Scalar& m41, const Scalar& m42, 
+								  const Scalar& m43, const Scalar& m44, const Scalar& m45,
+								  const Scalar& m50, const Scalar& m51, const Scalar& m52, 
+								  const Scalar& m53, const Scalar& m54, const Scalar& m55){
 			Base::_check_template_params();
 			(*this)
 				<< m00, m01, m02, m03, m04, m05,
@@ -109,68 +101,68 @@ class SpatialMatrix6f : public Eigen::Matrix<float, 6, 6>{
 		}
 };
 
-//Wrapper around intertial information in a format easy to translate to SpatialMatrix6f
-class SpatialInertia6f{
+//Wrapper around intertial information in a format easy to translate to smat6
+class sinertia6{
 	public:
 		//Data
 		float mass;
-		Vector3f centerOfMass;
-		Matrix3f inertia;
+		vec3 centerOfMass;
+		mat3 inertia;
 
 		//Operators and functions
-		SpatialInertia6f(){
+		sinertia6(){
 			mass = 0.0f;
-			centerOfMass = Vector3f::Zero();
-			inertia = Matrix3f::Zero();
+			centerOfMass = vec3::Zero();
+			inertia = mat3::Zero();
 		}
 
-		SpatialInertia6f(const float& m, const Vector3f& com, const Matrix3f& i){
+		sinertia6(const float& m, const vec3& com, const mat3& i){
 			mass = m;
 			centerOfMass = com;
 			inertia = i;
 		}
 
-		SpatialVector6f operator* (const SpatialVector6f &v) {
-			Vector3f mv_upper(v[0], v[1], v[2]);
-			Vector3f mv_lower(v[3], v[4], v[5]);
-			Vector3f res_upper = inertia * Vector3f(v[0], v[1], v[2]) + centerOfMass.cross(mv_lower);
-			Vector3f res_lower = mass * mv_lower - centerOfMass.cross(mv_upper);
-			return SpatialVector6f(res_upper[0], res_upper[1], res_upper[2],
-								   res_lower[0], res_lower[1], res_lower[2]);
+		svec6 operator* (const svec6 &v) {
+			vec3 mv_upper(v[0], v[1], v[2]);
+			vec3 mv_lower(v[3], v[4], v[5]);
+			vec3 res_upper = inertia * vec3(v[0], v[1], v[2]) + centerOfMass.cross(mv_lower);
+			vec3 res_lower = mass * mv_lower - centerOfMass.cross(mv_upper);
+			return svec6(res_upper[0], res_upper[1], res_upper[2],
+						 res_lower[0], res_lower[1], res_lower[2]);
 		}
 
-		SpatialInertia6f operator+ (const SpatialInertia6f &rbi) {
-			return SpatialInertia6f(mass + rbi.mass, (centerOfMass + rbi.centerOfMass) / (mass + rbi.mass),
-									inertia + rbi.inertia);
+		sinertia6 operator+ (const sinertia6 &rbi) {
+			return sinertia6(mass + rbi.mass, (centerOfMass + rbi.centerOfMass) / (mass + rbi.mass),
+							 inertia + rbi.inertia);
 		}
 };
 
-//Compact version of a 6x6 spatial matrix used to store transformations in a 3x3 matrix and a Vector3f. 
+//Compact version of a 6x6 spatial matrix used to store transformations in a 3x3 matrix and a vec3. 
 //Matrix is for rotation, vector is for translation. We can do this since scale isn't needed.
 //This idea is borrowed directly from Martin Felis's implementation.
-class SpatialTransform6f{
+class stransform6{
 	public:
 		//Data
-		Matrix3f rotation;
-		Vector3f translation;
+		mat3 rotation;
+		vec3 translation;
 
 		//Operators and functions
-		SpatialTransform6f(){
-			rotation = Matrix3f::Identity();
-			translation = Vector3f::Zero();
+		stransform6(){
+			rotation = mat3::Identity();
+			translation = vec3::Zero();
 		}
 
-		SpatialTransform6f(const Matrix3f& newRotation, const Vector3f& newTranslation){
+		stransform6(const mat3& newRotation, const vec3& newTranslation){
 			rotation = newRotation;
 			translation = newTranslation;
 		}
 
-		SpatialTransform6f operator* (const SpatialTransform6f& st) const {
-			return SpatialTransform6f(rotation * st.rotation, 
-									  st.translation + st.rotation.transpose() * translation);
+		stransform6 operator* (const stransform6& st) const {
+			return stransform6(rotation * st.rotation, 
+				 			   st.translation + st.rotation.transpose() * translation);
 		}
 
-		void operator*= (const SpatialTransform6f& st) {
+		void operator*= (const stransform6& st) {
 			translation = st.translation + st.rotation.transpose() * translation;
 			rotation *= st.rotation;
 		}
@@ -180,27 +172,27 @@ class SpatialTransform6f{
 // Function Implementations
 //====================================
 
-SpatialInertia6f spatialMatrixToSpatialInertia(const SpatialMatrix6f& m){
+sinertia6 spatialMatrixToSpatialInertia(const smat6& m){
 	float mass = m(3,3);
-	Vector3f centerOfMass = Vector3f(-m(1,5), m(0,5), -m(0,4));
-	Matrix3f inertia = m.block<3,3>(0,0);
-	return SpatialInertia6f(mass, centerOfMass, inertia);
+	vec3 centerOfMass = vec3(-m(1,5), m(0,5), -m(0,4));
+	mat3 inertia = m.block<3,3>(0,0);
+	return sinertia6(mass, centerOfMass, inertia);
 }
 
-SpatialMatrix6f spatialInertiaToSpatialMatrix(const SpatialInertia6f& I){
-	SpatialMatrix6f m;
+smat6 spatialInertiaToSpatialMatrix(const sinertia6& I){
+	smat6 m;
 	m.block<3,3>(0,0) = I.inertia;
 	m.block<3,3>(0,3) = vectorCrossMatrix(I.centerOfMass);
 	m.block<3,3>(3,0) = -vectorCrossMatrix(I.centerOfMass);
-	m.block<3,3>(3,3) = Matrix3f::Identity() * I.mass;
+	m.block<3,3>(3,3) = mat3::Identity() * I.mass;
 	return m;
 }
 
-SpatialVector6f applySpatialTransformToSpatialVector(const SpatialVector6f& v, const SpatialTransform6f& t){
-	Vector3f v_translated(v[3] - (t.translation[1] * v[2]) + (t.translation[2] * v[1]),
-						  v[4] - (t.translation[2] * v[0]) + (t.translation[0] * v[2]),
-						  v[5] - (t.translation[0] * v[1]) + (t.translation[1] * v[0]));
-	SpatialVector6f v_rotated;
+svec6 applySpatialTransformToSpatialVector(const svec6& v, const stransform6& t){
+	vec3 v_translated(v[3] - (t.translation[1] * v[2]) + (t.translation[2] * v[1]),
+					  v[4] - (t.translation[2] * v[0]) + (t.translation[0] * v[2]),
+					  v[5] - (t.translation[0] * v[1]) + (t.translation[1] * v[0]));
+	svec6 v_rotated;
 	v_rotated[0] = (t.rotation(0,0) * v[0]) + (t.rotation(0,1) * v[1]) + (t.rotation(0,2) * v[2]);
 	v_rotated[1] = (t.rotation(1,0) * v[0]) + (t.rotation(1,1) * v[1]) + (t.rotation(1,2) * v[2]);
 	v_rotated[2] = (t.rotation(2,0) * v[0]) + (t.rotation(2,1) * v[1]) + (t.rotation(2,2) * v[2]);
@@ -213,44 +205,41 @@ SpatialVector6f applySpatialTransformToSpatialVector(const SpatialVector6f& v, c
 	return v_rotated;
 }
 
-//SpatialInertia6f(const float& m, const Vector3f& com, const Matrix3f& i){
-SpatialInertia6f applySpatialTransformToSpatialInertia(const SpatialInertia6f& I, 
-													   const SpatialTransform6f& t){
+//sinertia6(const float& m, const vec3& com, const mat3& i){
+sinertia6 applySpatialTransformToSpatialInertia(const sinertia6& I, 
+													   const stransform6& t){
 	float mass = I.mass;
-	Vector3f centerOfMass = t.rotation.transpose() * (I.centerOfMass / I.mass) + t.translation;
-	Matrix3f inertia = t.rotation.transpose() * I.inertia * t.rotation - 
-					   vectorCrossMatrix(t.translation) * 
-					   vectorCrossMatrix(t.rotation.transpose() * I.centerOfMass) -
-					   vectorCrossMatrix(t.rotation.transpose() * I.centerOfMass + t.translation * I.mass) * 
-					   vectorCrossMatrix(t.translation);
-	return SpatialInertia6f(mass, centerOfMass, inertia);
+	vec3 centerOfMass = t.rotation.transpose() * (I.centerOfMass / I.mass) + t.translation;
+	mat3 inertia = t.rotation.transpose() * I.inertia * t.rotation - 
+				   vectorCrossMatrix(t.translation) * 
+				   vectorCrossMatrix(t.rotation.transpose() * I.centerOfMass) -
+				   vectorCrossMatrix(t.rotation.transpose() * I.centerOfMass + t.translation * I.mass) * 
+				   vectorCrossMatrix(t.translation);
+	return sinertia6(mass, centerOfMass, inertia);
 }
 
-SpatialVector6f applySpatialTransformToTranspose(const SpatialVector6f& v, const SpatialTransform6f& t){
-	Vector3f rotationTransposedV;
+svec6 applySpatialTransformToTranspose(const svec6& v, const stransform6& t){
+	vec3 rotationTransposedV;
 	rotationTransposedV[0] = t.rotation(0,0) * v[3] + t.rotation(1,0) * v[4] + t.rotation(2,0) * v[5];
 	rotationTransposedV[1] = t.rotation(0,1) * v[3] + t.rotation(1,1) * v[4] + t.rotation(2,1) * v[5];
 	rotationTransposedV[2] = t.rotation(0,2) * v[3] + t.rotation(1,2) * v[4] + t.rotation(2,2) * v[5];
-	SpatialVector6f transpose;
+	svec6 transpose;
 	transpose[0] = (t.rotation(0,0) * v[0]) + (t.rotation(1,0) * v[1]) + (t.rotation(2,0) * v[2]) - 
-				   (t.translation[2] * rotationTransposedV[1]) + 
-				   (t.translation[1] * rotationTransposedV[2]);
+				   (t.translation[2] * rotationTransposedV[1]) + (t.translation[1] * rotationTransposedV[2]);
 	transpose[1] = (t.rotation(0,1) * v[0]) + (t.rotation(1,1) * v[1]) + (t.rotation(2,1) * v[2]) + 
-				   (t.translation[2] * rotationTransposedV[0]) - 
-				   (t.translation[0] * rotationTransposedV[2]);
+				   (t.translation[2] * rotationTransposedV[0]) - (t.translation[0] * rotationTransposedV[2]);
 	transpose[2] = (t.rotation(0,2) * v[0]) + (t.rotation(1,2) * v[1]) + (t.rotation(2,2) * v[2]) - 
-				   (t.translation[1] * rotationTransposedV[0]) + 
-				   (t.translation[0] * rotationTransposedV[1]);
+				   (t.translation[1] * rotationTransposedV[0]) + (t.translation[0] * rotationTransposedV[1]);
 	transpose[3] = rotationTransposedV[0];
 	transpose[4] = rotationTransposedV[1];
 	transpose[5] = rotationTransposedV[2];
 	return transpose;
 }
 
-SpatialVector6f applySpatialTransformToAdjoint(const SpatialVector6f& v, const SpatialTransform6f& t){
-	Vector3f transformedAdjoint = (t.rotation * (Vector3f(v[0], v[1], v[2])) - 
-					  			  (t.translation.cross(Vector3f(v[3], v[4], v[5]))));	
-	SpatialVector6f adjoint;
+svec6 applySpatialTransformToAdjoint(const svec6& v, const stransform6& t){
+	vec3 transformedAdjoint = (t.rotation * (vec3(v[0], v[1], v[2])) - 
+					  		  (t.translation.cross(vec3(v[3], v[4], v[5]))));	
+	svec6 adjoint;
 	adjoint[0] = transformedAdjoint[0];
 	adjoint[1] = transformedAdjoint[1];
 	adjoint[2] = transformedAdjoint[2];
@@ -260,38 +249,38 @@ SpatialVector6f applySpatialTransformToAdjoint(const SpatialVector6f& v, const S
 	return adjoint;
 }
 
-SpatialMatrix6f spatialTransformToSpatialMatrix(const SpatialTransform6f& t){
-	Matrix3f Erx = t.rotation * createMatrix3f(0.0f, -t.translation[2], t.translation[1],
-				   							   t.translation[2], 0.0f, -t.translation[0],
-				   							   -t.translation[1], t.translation[0], 0.0f);
-	SpatialMatrix6f m;
+smat6 spatialTransformToSpatialMatrix(const stransform6& t){
+	mat3 Erx = t.rotation * createMat3(0.0f, -t.translation[2], t.translation[1],
+				   					   t.translation[2], 0.0f, -t.translation[0],
+				   					   -t.translation[1], t.translation[0], 0.0f);
+	smat6 m;
 	m.block<3,3>(0,0) = t.rotation;
-	m.block<3,3>(0,3) = Matrix3f::Zero();
+	m.block<3,3>(0,3) = mat3::Zero();
 	m.block<3,3>(3,0) = -Erx;
 	m.block<3,3>(3,3) = t.rotation;
 	return m;	
 }
 
-SpatialMatrix6f spatialTransformToSpatialMatrixAdjoint(const SpatialTransform6f& t){
-	Matrix3f Erx = t.rotation * createMatrix3f(0.0f, -t.translation[2], t.translation[1],
-				   							   t.translation[2], 0.0f, -t.translation[0],
-				   							   -t.translation[1], t.translation[0], 0.0f);
-	SpatialMatrix6f m;
+smat6 spatialTransformToSpatialMatrixAdjoint(const stransform6& t){
+	mat3 Erx = t.rotation * createMat3(0.0f, -t.translation[2], t.translation[1],
+				   					   t.translation[2], 0.0f, -t.translation[0],
+				   					   -t.translation[1], t.translation[0], 0.0f);
+	smat6 m;
 	m.block<3,3>(0,0) = t.rotation;
 	m.block<3,3>(0,3) = -Erx;
-	m.block<3,3>(3,0) = Matrix3f::Zero();
+	m.block<3,3>(3,0) = mat3::Zero();
 	m.block<3,3>(3,3) = t.rotation;
 	return m;	
 }
 
-SpatialMatrix6f spatialTransformToSpatialMatrixTranspose(const SpatialTransform6f& t){
-	Matrix3f Erx = t.rotation * createMatrix3f(0.0f, -t.translation[2], t.translation[1],
-				   							   t.translation[2], 0.0f, -t.translation[0],
-				   							   -t.translation[1], t.translation[0], 0.0f);
-	SpatialMatrix6f m;
+smat6 spatialTransformToSpatialMatrixTranspose(const stransform6& t){
+	mat3 Erx = t.rotation * createMat3(0.0f, -t.translation[2], t.translation[1],
+				   					   t.translation[2], 0.0f, -t.translation[0],
+				   					   -t.translation[1], t.translation[0], 0.0f);
+	smat6 m;
 	m.block<3,3>(0,0) = t.rotation.transpose();
 	m.block<3,3>(0,3) = -Erx.transpose();
-	m.block<3,3>(3,0) = Matrix3f::Zero();
+	m.block<3,3>(3,0) = mat3::Zero();
 	m.block<3,3>(3,3) = t.rotation.transpose();
 	return m;	
 }
@@ -302,9 +291,9 @@ SpatialMatrix6f spatialTransformToSpatialMatrixTranspose(const SpatialTransform6
 //====================================
 
 //Specialize STL's vectors for Eigen3 based spatial data types to deal with Eigen3 alignment issues
-EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(mathCore::SpatialVector6f)
-EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(mathCore::SpatialMatrix6f)
-EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(mathCore::SpatialTransform6f)
-EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(mathCore::SpatialInertia6f)
+EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(spatialmathCore::svec6)
+EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(spatialmathCore::smat6)
+EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(spatialmathCore::stransform6)
+EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(spatialmathCore::sinertia6)
 
 #endif

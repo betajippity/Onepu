@@ -7,12 +7,11 @@
 #include "utilities/utilities.h"
 #include <Eigen/Core>
 #include "math/spatialmath.inl"
-#include "rigidbody/rigidbody.inl"
-#include "rigidbody/joint.inl"
+#include "rigidbody/rig.inl"
 
 using namespace std;
 using namespace Eigen;
-using namespace mathCore;
+using namespace spatialmathCore;
 
 int main(int argc, char** argv){
 
