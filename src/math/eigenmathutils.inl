@@ -17,7 +17,7 @@ using namespace Eigen;
 
 namespace spatialmathCore {
 
-typedef VectorXf vecx;
+typedef VectorXf vecX;
 typedef Vector3f vec3;
 typedef Matrix3f mat3;
 

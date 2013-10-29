@@ -25,8 +25,9 @@ namespace rigidbodyCore {
 // Struct and Function Declarations
 //====================================
 
+//Multijoints are implemented as single joints with zero mass bodies chained on. Cheat-ey, but it works.
 enum jointType {
-	jointRevolte,
+	jointRevolute,
 	jointPrismatic,
 	jointFixed,
 	joint1DoF,
@@ -34,7 +35,8 @@ enum jointType {
 	joint3DoF,
 	joint4DoF,
 	joint5DoF,
-	joint6DoF
+	joint6DoF,
+	undefined //not sure if this is actually needed...
 };
 
 //Defines a single joint and associated properties
@@ -50,8 +52,9 @@ struct joint{
 };
 
 //Forward declarations for externed inlineable methods
+extern inline joint createJoint();
 extern inline joint createJoint(const vector<svec6>& axes, const jointType& type);
-extern inline joint createJoint(const svec6& axis, const jointType& type);
+extern inline joint createJoint(const vec3& axis, const jointType& type);
 extern inline joint createJoint(const svec6& axis0);
 extern inline joint createJoint(const svec6& axis0, const svec6& axis1);
 extern inline joint createJoint(const svec6& axis0, const svec6& axis1, const svec6& axis2);
@@ -61,17 +64,26 @@ extern inline joint createJoint(const svec6& axis0, const svec6& axis1, const sv
 								const svec6& axis3, const svec6& axis4);
 extern inline joint createJoint(const svec6& axis0, const svec6& axis1, const svec6& axis2, 
 								const svec6& axis3, const svec6& axis4, const svec6& axis5);
+extern inline svec6 getJointAxis(const joint& j, const int& axisNumber);
 inline void blankEmptyAxes(joint& j);
 
 //====================================
 // Function Implementations
 //====================================
 
-joint createJoint(const svec6& axis, const jointType& type){
+joint createJoint(){
+	joint j;
+	j.degreesOfFreedom = 0;
+	j.type = undefined;
+	blankEmptyAxes(j);
+	return j;
+}
+
+joint createJoint(const vec3& axis, const jointType& type){
 	joint j;
 	j.degreesOfFreedom = 1;
-	svec6 newAxis = axis;
-	if(type==jointRevolte){
+	svec6 newAxis;
+	if(type==jointRevolute){
 		newAxis = svec6(axis[0], axis[1], axis[2], 0.0f, 0.0f, 0.0f);
 	}else if(type==jointPrismatic){
 		newAxis = svec6(0.0f, 0.0f, 0.0f, axis[0], axis[1], axis[2]);
@@ -90,6 +102,16 @@ void blankEmptyAxes(joint& j){
 		else if(i==4){ j.axis4 = svec6(-1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f); }
 		else if(i==5){ j.axis5 = svec6(-1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f); }
 	}
+}
+
+svec6 getJointAxis(const joint& j, const int& axisNumber){
+	int i = max(min(axisNumber,5), 0);
+	if(i==0){ return j.axis0; }
+	else if(i==1){ return j.axis1; }
+	else if(i==2){ return j.axis2; }
+	else if(i==3){ return j.axis3; }
+	else if(i==4){ return j.axis4; }
+	else if(i==5){ return j.axis5; }
 }
 
 joint createJoint(const svec6& axis0){
@@ -164,5 +186,11 @@ joint createJoint(const vector<svec6>& axes, const jointType& type){
 	return j;
 }
 }
+
+//====================================
+// Eigen Specialization Stuff
+//====================================
+
+EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(rigidbodyCore::joint);
 
 #endif

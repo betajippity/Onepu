@@ -30,13 +30,19 @@ struct rigidBody {
 	mat3 inertia;
 	smat6 spatialInertia;
 	bool fixed;
+	bool ghost;	//by default, rbs are assumed to not be ghost. This must be explicitly set afterwards.
+	int parentID;
+	//these two variables are only used if the body is fixed
+	stransform6 parentTransform;
+	stransform6 baseTransform;
 };
 
 //Forward declarations for externed inlineable methods
+extern inline rigidBody createRigidBody();
 extern inline rigidBody createRigidBody(const float& mass, const vec3& centerOfMass, 
-							  			const vec3& gyrationRadii, bool fixed);
+							  			const vec3& gyrationRadii, const bool& fixed, const int& parentID);
 extern inline rigidBody createRigidBody(const float& mass, const vec3& centerOfMass, 
-							  			const mat3& inertia, bool fixed);
+							  			const mat3& inertia, const bool& fixed, const int& parentID);
 extern inline rigidBody joinRigidBodies(const rigidBody& rb1, const rigidBody& rb2, 
 										const stransform6& transform);
 
@@ -44,18 +50,31 @@ extern inline rigidBody joinRigidBodies(const rigidBody& rb1, const rigidBody& r
 // Function Implementations
 //====================================
 
+rigidBody createRigidBody(){
+	rigidBody rb;
+	rb.mass = 1.0f;
+	rb.centerOfMass = vec3(0.0f, 0.0f, 0.0f);
+	rb.inertia = mat3::Zero();
+	rb.spatialInertia = smat6::Zero();
+	rb.fixed = false;
+	rb.parentID = -1;
+	rb.ghost = false;
+	return rb;
+}
+
 //Create rigid body from mass, center of mass (in body coords), and the radii of gyration at 
 //the center of mass
 rigidBody createRigidBody(const float& mass, const vec3& centerOfMass, const vec3& gyrationRadii, 	
-						  bool fixed){
+						  const bool& fixed, const int& parentID){
 	mat3 inertia = createMat3(gyrationRadii[0], 0.0f, 0.0f,
 						  	  0.0f, gyrationRadii[1], 0.0f,
 						  	  0.0f, 0.0f, gyrationRadii[2]);
-	return createRigidBody(mass, centerOfMass, inertia, fixed);
+	return createRigidBody(mass, centerOfMass, inertia, fixed, parentID);
 }
 
 //Create rigid body from mass, center of mass, and inertia matrix
-rigidBody createRigidBody(const float& mass, const vec3& centerOfMass, const mat3& inertia, bool fixed){
+rigidBody createRigidBody(const float& mass, const vec3& centerOfMass, const mat3& inertia, 
+						  const bool& fixed, const int& parentID){
 	rigidBody rb;
 	rb.fixed = fixed;
 	rb.mass = mass;
@@ -77,6 +96,8 @@ rigidBody createRigidBody(const float& mass, const vec3& centerOfMass, const mat
 						 	  massCOMCT(0, 0), massCOMCT(0, 1), massCOMCT(0, 2), mass, 0.0f, 0.0f,
 						 	  massCOMCT(1, 0), massCOMCT(1, 1), massCOMCT(1, 2), 0.0f, mass, 0.0f,
 						 	  massCOMCT(2, 0), massCOMCT(2, 1), massCOMCT(2, 2), 0.0f, 0.0f, mass);
+	rb.parentID = parentID;
+	rb.ghost = false;
 	return rb;
 }
 
@@ -97,8 +118,14 @@ rigidBody joinRigidBodies(const rigidBody& rb1, const rigidBody& rb2, const stra
 	mat3 sumOfIntertias = rb1.spatialInertia.block<3,3>(0,0) + rb2InertiaCOMRotatedToRb1;
 	mat3 newCOMCrossed = vectorCrossMatrix(newCenterOfMass);
 	mat3 newInertia = sumOfIntertias - (newMass * newCOMCrossed * newCOMCrossed.transpose()); 
-	return createRigidBody(newMass, newCenterOfMass, newInertia, rb1.fixed);
+	return createRigidBody(newMass, newCenterOfMass, newInertia, rb1.fixed, rb1.parentID);
 }
 }
+
+//====================================
+// Eigen Specialization Stuff
+//====================================
+
+EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(rigidbodyCore::rigidBody);
 
 #endif

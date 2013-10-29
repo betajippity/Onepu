@@ -21,4 +21,7 @@ int main(int argc, char** argv){
 	cout << "Copyright (C) Yining Karl Li. All rights reserved." << endl;
 	cout << "===================================================" << endl;
 	cout << "" << endl;
+
+	rigidbodyCore::rig test = rigidbodyCore::createRig();
+
 }
