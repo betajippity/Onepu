@@ -5,13 +5,12 @@
 // Implements rigviewer.hpp
 
 #include "rigviewer.hpp"
-#include "../utilities/utilities.h"
 
 using namespace viewerCore;
 using namespace spatialmathCore;
 
 rigviewer::rigviewer(rigidbodyCore::rig* newr){
-    resolution = evec2(1000, 1000);
+    resolution = vec2(1000, 1000);
     r = newr;
 }
 
@@ -44,11 +43,11 @@ vboData rigviewer::createVBO(vboData data, float* vertices, int numberOfVertices
 void rigviewer::updateInputs(){
     double x; double y;
     glfwGetCursorPos(window, &x, &y);
-    evec2 d;
-    d[0] = float(x-cam.mouseOld[0]);
-    d[1] = float(y-cam.mouseOld[1]);
-    cam.mouseOld[0] = x;
-    cam.mouseOld[1] = y;
+    vec2 d;
+    d.x = float(x-cam.mouseOld.x);
+    d.y = float(y-cam.mouseOld.y);
+    cam.mouseOld.x = x;
+    cam.mouseOld.y = y;
     if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == 1 || 
         glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == 1 ||
         glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == 1){
@@ -61,15 +60,15 @@ void rigviewer::updateInputs(){
         }
         if(doCamera==true){
             if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == 1){
-                cam.rotate[0] += d[1] * cam.rotateSpeed;
-                cam.rotate[1] += d[0] * cam.rotateSpeed;
+                cam.rotate.x += d.y * cam.rotateSpeed;
+                cam.rotate.y += d.x * cam.rotateSpeed;
             }
             if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == 1){
-                cam.translate[2] += d[1] * cam.zoomSpeed;
+                cam.translate.z += d.y * cam.zoomSpeed;
             }
             if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == 1){
-                cam.translate[0] += d[0] * cam.panSpeed;
-                cam.translate[1] -= d[1] * cam.panSpeed;
+                cam.translate.x += d.x * cam.panSpeed;
+                cam.translate.y -= d.y * cam.panSpeed;
             }  
         }
     }
@@ -83,11 +82,11 @@ void rigviewer::mainLoop(){
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
 
-        glTranslatef(cam.translate[0], cam.translate[1], cam.translate[2]-10);
+        glTranslatef(cam.translate.x, cam.translate.y, cam.translate.z-10.0f);
         // apply the current rotation
-        glRotatef(cam.rotate[0], 1, 0, 0);
-        glRotatef(cam.rotate[1], 0, 1, 0);
-        glRotatef(cam.rotate[2], 0, 0, 1);
+        glRotatef(cam.rotate.x, 1, 0, 0);
+        glRotatef(cam.rotate.y, 0, 1, 0);
+        glRotatef(cam.rotate.z, 0, 0, 1);
         
         // for(int i=0; i<vbos.size(); i++){
         //     glBindBuffer(GL_ARRAY_BUFFER, vbos[i].vboID);
@@ -154,14 +153,14 @@ void rigviewer::threadManager(){
 
 void rigviewer::init(){
     //Camera setup stuff
-    evec2 fov = evec2(45.0f, 45.0f);
+    vec2 fov = vec2(45.0f, 45.0f);
 
     //Window setup stuff
     glfwSetErrorCallback(errorCallback);
     if (!glfwInit()){
         exit(EXIT_FAILURE);
     }
-    window = glfwCreateWindow(resolution[0], resolution[1], "ONEPU Rig Viewer", NULL, NULL);
+    window = glfwCreateWindow(resolution.x, resolution.y, "ONEPU Rig Viewer", NULL, NULL);
     if (!window){
         glfwTerminate();
         exit(EXIT_FAILURE);
@@ -176,9 +175,9 @@ void rigviewer::init(){
     //camera stuff
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    evec2 xBounds;
-    evec2 yBounds;
-    utilityCore::fovToPerspective(fov[0], 1, 1, xBounds, yBounds); 
+    vec2 xBounds;
+    vec2 yBounds;
+    utilityCore::fovToPerspective(fov.x, 1, 1, xBounds, yBounds); 
     glFrustum(xBounds[0], xBounds[1], yBounds[0], yBounds[1], 1, 500);
     glMatrixMode(GL_MODELVIEW);
 

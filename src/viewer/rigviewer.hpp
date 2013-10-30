@@ -20,10 +20,12 @@
 #include <Eigen/Core>
 #include "../math/eigenmathutils.inl"
 #include "../rigidbody/rig.inl"
+#include "../utilities/utilities.h"
 
 enum vbotype{QUADS, TRIANGLES, LINES};
 
 using namespace std;
+using namespace glm;
 using namespace Eigen;
 using namespace spatialmathCore;
 
@@ -33,14 +35,14 @@ struct vboData{
 	GLuint vboID;
 	int size;
 	vbotype type;
-	evec3 color;
+	vec3 color;
 };
 
 //Used just for tracking OpenGL viewport camera position/keeping in sync with rendercam
 struct glCamera{
-	evec2 mouseOld;
-	evec3 rotate;
-	evec3 translate;
+	vec2 mouseOld;
+	vec3 rotate;
+	vec3 translate;
 	int currentKey;
 	int currentMouseClick;
 	float rotateSpeed;
@@ -48,9 +50,9 @@ struct glCamera{
 	float panSpeed;
 
 	//Initializer
-	glCamera(): mouseOld(evec2(0.0f,0.0f)), 
-				rotate(evec3(0.0f,0.0f,0.0f)), 
-				translate(evec3(0.0f,0.0f,0.0f)),
+	glCamera(): mouseOld(vec2(0.0f,0.0f)), 
+				rotate(vec3(0.0f,0.0f,0.0f)), 
+				translate(vec3(0.0f,0.0f,0.0f)),
 				currentKey(0),
 				currentMouseClick(0),
 				rotateSpeed(0.2f),
@@ -89,7 +91,7 @@ class rigviewer {
 		static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 		//Cached data
-		evec2 resolution;
+		vec2 resolution;
 		GLFWwindow* window;
 		vector<vboData> vbos;
 		glCamera cam;

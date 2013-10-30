@@ -1,6 +1,6 @@
 // UtilityCore: A utility library. Part of the TAKUA Render project.
 // Written by Yining Karl Li
-// Version 0.5.13.39a_eulermod
+// Version 0.5.13.39a
 //  
 // File: utilities.h
 // A collection/kitchen sink of generally useful functions
@@ -16,6 +16,7 @@
 #define DEVICE
 #endif
 
+#include <glm/glm.hpp>
 #include <algorithm>
 #include <istream>
 #include <ostream>
@@ -23,9 +24,6 @@
 #include <sstream>
 #include <string>
 #include <vector>
-#include "../math/eigenmathutils.inl"
-
-using namespace spatialmathCore;
 
 //====================================
 // Useful Math Constants
@@ -47,6 +45,7 @@ namespace utilityCore {
 
 //Math stuff
 extern inline float clamp(float f, float min, float max);
+extern inline glm::vec3 clampRGB(glm::vec3 color);
 extern inline bool epsilonCheck(float a, float b);
 
 //String wrangling stuff
@@ -61,9 +60,21 @@ extern inline std::string getFirstNCharactersOfString(std::string s, int n);
 extern inline int getMilliseconds();
 extern inline int compareMilliseconds(int referenceTime);
 
+//Matrix stuff
+extern inline glm::mat4 buildTransformationMatrix(glm::vec3 translation, glm::vec3 rotation, 
+                                                  glm::vec3 scale);
+extern inline glm::mat4 buildInverseTransformationMatrix(glm::vec3 translation, glm::vec3 rotation, 
+                                                  glm::vec3 scale);
+HOST DEVICE extern inline glm::vec4 multiply(glm::mat4 m, glm::vec4 v);
+
+//GLM Printers
+extern inline void printMat4(glm::mat4);
+extern inline void printVec4(glm::vec4);
+extern inline void printVec3(glm::vec3);
+
 //Useful stuff for GL
-extern inline void fovToPerspective(float fovy, float aspect, float zNear, evec2& xBounds, 
-									evec2& yBounds);
+extern inline void fovToPerspective(float fovy, float aspect, float zNear, glm::vec2& xBounds, 
+									glm::vec2& yBounds);
 
 //IO Stuff
 extern inline std::string readFileAsString(std::string filename);
