@@ -138,9 +138,9 @@ int addBodyMultiJointToRig(rig& r, const int& parentID, const stransform6& joint
 		vec3 translation(a[3], a[4], a[5]);	
 		//determine whether joint is prismatic or revolute or non of the above
 		if(vec3(rotation-vec3(0,0,0)).norm()<=EPSILON){
-			createJoint(translation, jointPrismatic);
+			ghostJoint = createJoint(translation, jointPrismatic);
 		}else if(vec3(translation-vec3(0,0,0)).norm()<=EPSILON){
-			createJoint(rotation, jointRevolute);
+			ghostJoint = createJoint(rotation, jointRevolute);
 		}	
 		//joint 0 is transformed by jointFrame, all other joints have zeroed transforms
 		if(i==0){
@@ -160,7 +160,48 @@ int addBodyMultiJointToRig(rig& r, const int& parentID, const stransform6& joint
 //transformation from the parent frame to the origin of the joint frame, aka the X_T John was wondering about
 int addBodyToRig(rig& r, const int& parentID, const stransform6& jointFrame, const joint& j, 
 				 const rigidBody& rb){
-
+	if(j.type==jointFixed){
+		return addBodyFixedJointToRig(r, parentID, jointFrame, rb);
+	}else if(j.type!=jointPrismatic && j.type!=jointRevolute){
+		return addBodyMultiJointToRig(r, parentID, jointFrame, j, rb);
+	}
+	//make sure joint is defined
+	if(j.type==undefined){
+		return -100;
+	}
+	//make sure rb is attached to fixed body's movable parent if parent is fixed
+	int movableParentID = parentID;
+	stransform6 moveableParentTransform;
+	if(r.bodies[parentID].fixed==true){
+		movableParentID = r.bodies[parentID].parentID;
+		moveableParentTransform = r.bodies[parentID].parentTransform;
+	}
+	//push back a ton of stuff for rb
+	r.parentIDs.push_back(movableParentID);
+	r.childrenIDs.push_back(vector<int>());
+	r.childrenIDs.at(movableParentID).push_back(r.bodies.size());
+	r.parentToCurrentTransform.push_back(stransform6());
+	r.baseToRBFrameTransform.push_back(stransform6());
+	r.bodies.push_back(rb);
+	r.numberOfDegreesOfFreedom = r.numberOfDegreesOfFreedom+1;
+	//push back velocities and joints and stuff
+	r.spatialVelocities.push_back(svec6(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f));
+	r.spatialAccelerations.push_back(svec6(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f));
+	r.joints.push_back(j);
+	r.jointAxes.push_back(j.axis0);
+	//invert transform to child node's perspective
+	r.parentToJointTransforms.push_back(jointFrame*moveableParentTransform); 
+	//dynamics stuff
+	r.velocityDrivenSpatialAccelerations.push_back(svec6(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f));
+	r.rbSpatialInertias.push_back(rb.spatialInertia);
+	r.spatialBiasForces.push_back(svec6(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f));
+	r.tempUi.push_back(svec6(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f));
+	r.tempdi = vecX::Zero(r.bodies.size());
+	r.tempu = vecX::Zero(r.bodies.size());
+	r.rbInternalForces.push_back(svec6(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f));
+	sinertia6 rbSI(rb.mass, rb.centerOfMass, rb.inertia);
+	r.spatialInertiasPerRb.push_back(rbSI);
+	return r.bodies.size()-1;;
 }
 }
 
