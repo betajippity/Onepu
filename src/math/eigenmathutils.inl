@@ -8,7 +8,6 @@
 #define EIGENMATHUTILS_INL
 
 #include <Eigen/Core>
-#include "../utilities/utilities.h"
 
 #define EIGEN_DEFAULT_TO_ROW_MAJOR
 
@@ -19,6 +18,7 @@ namespace spatialmathCore {
 
 typedef VectorXf vecX;
 typedef Vector3f vec3;
+typedef Vector2f vec2;
 typedef Matrix3f mat3;
 
 //====================================

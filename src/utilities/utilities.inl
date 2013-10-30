@@ -1,6 +1,6 @@
 // UtilityCore: A utility library. Part of the TAKUA Render project.
 // Written by Yining Karl Li
-// Version 0.5.13.39a
+// Version 0.5.13.39a_eulermod
 //  
 // File: utilities.inl
 // A collection/kitchen sink of generally useful functions
@@ -15,14 +15,15 @@
 #define HOST
 #define DEVICE
 #endif
-
-#include <glm/gtc/matrix_transform.inl>
-#include <glm/glm.hpp>
+ 
 #include <iostream>
 #include <sys/timeb.h>
 #include <cstdio>
 #include <cstring>
 #include <fstream>
+#include "../math/eigenmathutils.inl"
+
+using namespace spatialmathCore;
 
 //====================================
 // Math stuff
@@ -36,25 +37,6 @@ float utilityCore::clamp(float f, float min, float max){
     }else{
         return f;
     }
-}
-
-glm::vec3 utilityCore::clampRGB(glm::vec3 color){
-    if(color[0]<0){
-        color[0]=0;
-    }else if(color[0]>255){
-        color[0]=255;
-    }
-    if(color[1]<0){
-        color[1]=0;
-    }else if(color[1]>255){
-        color[1]=255;
-    }
-    if(color[2]<0){
-        color[2]=0;
-    }else if(color[2]>255){
-        color[2]=255;
-    }
-    return color;
 }
 
 bool utilityCore::epsilonCheck(float a, float b){
@@ -135,56 +117,11 @@ int utilityCore::compareMilliseconds(int referenceTime){
 }
 
 //====================================
-// Matrix stuff
-//====================================
-
-glm::mat4 utilityCore::buildTransformationMatrix(glm::vec3 translation, glm::vec3 rotation, glm::vec3 scale){
-    glm::mat4 translationMat = glm::translate(glm::mat4(), translation);
-    glm::mat4 rotationMat = glm::rotate(glm::mat4(), rotation.x, glm::vec3(1,0,0));
-    rotationMat = rotationMat*glm::rotate(glm::mat4(), rotation.y, glm::vec3(0,1,0));
-    rotationMat = rotationMat*glm::rotate(glm::mat4(), rotation.z, glm::vec3(0,0,1));
-    glm::mat4 scaleMat = glm::scale(glm::mat4(), scale);
-    return translationMat*rotationMat*scaleMat;
-}
-
-glm::mat4 utilityCore::buildInverseTransformationMatrix(glm::vec3 translation, glm::vec3 rotation, glm::vec3 scale){
-    return glm::inverse(buildTransformationMatrix(translation, rotation, scale));
-}
-
-HOST DEVICE glm::vec4 utilityCore::multiply(glm::mat4 m, glm::vec4 v){
-    glm::vec4 r;
-    r.x = m[0][0] * v.x + m[1][0] * v.y + m[2][0] * v.z + m[3][0] * v.w;
-    r.y = m[0][1] * v.x + m[1][1] * v.y + m[2][1] * v.z + m[3][1] * v.w;
-    r.z = m[0][2] * v.x + m[1][2] * v.y + m[2][2] * v.z + m[3][2] * v.w;
-    r.w = m[0][3] * v.x + m[1][3] * v.y + m[2][3] * v.z + m[3][3] * v.w;
-    return r;
-}
-
-//====================================
-// GLM Printers
-//====================================
-
-void utilityCore::printMat4(glm::mat4 m){
-    std::cout << m[0][0] << " " << m[1][0] << " " << m[2][0] << " " << m[3][0] << std::endl;
-    std::cout << m[0][1] << " " << m[1][1] << " " << m[2][1] << " " << m[3][1] << std::endl;
-    std::cout << m[0][2] << " " << m[1][2] << " " << m[2][2] << " " << m[3][2] << std::endl;
-    std::cout << m[0][3] << " " << m[1][3] << " " << m[2][3] << " " << m[3][3] << std::endl;
-}
-
-void utilityCore::printVec4(glm::vec4 m){
-    std::cout << m[0] << " " << m[1] << " " << m[2] << " " << m[3] << std::endl;
-}
-
-void utilityCore::printVec3(glm::vec3 m){
-    std::cout << m[0] << " " << m[1] << " " << m[2] << std::endl;
-}
-
-//====================================
 // GL Stuff
 //====================================
 
-void utilityCore::fovToPerspective(float fovy, float aspect, float zNear, glm::vec2& xBounds, 
-                                   glm::vec2& yBounds){
+void utilityCore::fovToPerspective(float fovy, float aspect, float zNear, vec2& xBounds, 
+                                   vec2& yBounds){
     yBounds[1] = zNear * tan(fovy*(float)PI/360.0f);
     yBounds[0] = -yBounds[1];
     xBounds[0] = yBounds[0]*aspect;

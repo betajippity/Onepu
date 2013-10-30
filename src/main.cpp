@@ -4,16 +4,15 @@
 // File: main.cpp
 // Entry point for ONEPU
 
-#include "utilities/utilities.h"
 #include <Eigen/Core>
 #include "math/spatialmath.inl"
 #include "math/spatialmathutils.inl"
 #include "rigidbody/rig.inl"
+#include "viewer/rigviewer.hpp"
 
 using namespace std;
 using namespace Eigen;
 using namespace spatialmathCore;
-
 using namespace rigidbodyCore;
 
 int main(int argc, char** argv){
@@ -47,5 +46,6 @@ int main(int argc, char** argv){
 	}
 	//rigidBody rb3 = createRigidBody(dd);
 
-
+	viewerCore::rigviewer* viewer = new viewerCore::rigviewer(); 
+	viewer->launch();
 }

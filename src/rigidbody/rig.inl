@@ -11,7 +11,6 @@
 #include "../math/spatialmath.inl"
 #include "rigidbody.inl"
 #include "joint.inl"
-#include "../utilities/utilities.h"
 
 #define EIGEN_DEFAULT_TO_ROW_MAJOR
 
