@@ -11,7 +11,7 @@ using namespace viewerCore;
 using namespace spatialmathCore;
 
 rigviewer::rigviewer(rigidbodyCore::rig* newr){
-    resolution = vec2(1000, 1000);
+    resolution = evec2(1000, 1000);
     r = newr;
 }
 
@@ -44,7 +44,7 @@ vboData rigviewer::createVBO(vboData data, float* vertices, int numberOfVertices
 void rigviewer::updateInputs(){
     double x; double y;
     glfwGetCursorPos(window, &x, &y);
-    vec2 d;
+    evec2 d;
     d[0] = float(x-cam.mouseOld[0]);
     d[1] = float(y-cam.mouseOld[1]);
     cam.mouseOld[0] = x;
@@ -111,7 +111,7 @@ void rigviewer::mainLoop(){
             
             gluQuadricDrawStyle(sphere, GLU_SILHOUETTE);
             glPushMatrix();
-                vec4 trans = r->stackedTransforms[i] * vec4(0,0,0,1);
+                evec4 trans = r->stackedTransforms[i] * evec4(0,0,0,1);
                 glTranslatef(trans[0], trans[1], trans[2]);
                 glColor3f(1,1,1);
                 if(i==0){
@@ -154,7 +154,7 @@ void rigviewer::threadManager(){
 
 void rigviewer::init(){
     //Camera setup stuff
-    vec2 fov = vec2(45.0f, 45.0f);
+    evec2 fov = evec2(45.0f, 45.0f);
 
     //Window setup stuff
     glfwSetErrorCallback(errorCallback);
@@ -176,8 +176,8 @@ void rigviewer::init(){
     //camera stuff
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    vec2 xBounds;
-    vec2 yBounds;
+    evec2 xBounds;
+    evec2 yBounds;
     utilityCore::fovToPerspective(fov[0], 1, 1, xBounds, yBounds); 
     glFrustum(xBounds[0], xBounds[1], yBounds[0], yBounds[1], 1, 500);
     glMatrixMode(GL_MODELVIEW);

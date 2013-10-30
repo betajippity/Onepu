@@ -26,8 +26,8 @@ namespace rigidbodyCore {
 //Defines a single rigid body and associated properties
 struct rigidBody {
 	float mass;
-	vec3 centerOfMass;
-	mat3 inertia;
+	evec3 centerOfMass;
+	emat3 inertia;
 	smat6 spatialInertia;
 	bool fixed;
 	bool ghost;	//by default, rbs are assumed to not be ghost. This must be explicitly set afterwards.
@@ -39,10 +39,10 @@ struct rigidBody {
 
 //Forward declarations for externed inlineable methods
 extern inline rigidBody createRigidBody();
-extern inline rigidBody createRigidBody(const float& mass, const vec3& centerOfMass, 
-							  			const vec3& gyrationRadii, const bool& fixed, const int& parentID);
-extern inline rigidBody createRigidBody(const float& mass, const vec3& centerOfMass, 
-							  			const mat3& inertia, const bool& fixed, const int& parentID);
+extern inline rigidBody createRigidBody(const float& mass, const evec3& centerOfMass, 
+							  			const evec3& gyrationRadii, const bool& fixed, const int& parentID);
+extern inline rigidBody createRigidBody(const float& mass, const evec3& centerOfMass, 
+							  			const emat3& inertia, const bool& fixed, const int& parentID);
 extern inline rigidBody joinRigidBodies(const rigidBody& rb1, const rigidBody& rb2, 
 										const stransform6& transform);
 
@@ -53,8 +53,8 @@ extern inline rigidBody joinRigidBodies(const rigidBody& rb1, const rigidBody& r
 rigidBody createRigidBody(){
 	rigidBody rb;
 	rb.mass = 1.0f;
-	rb.centerOfMass = vec3(0.0f, 0.0f, 0.0f);
-	rb.inertia = mat3::Zero();
+	rb.centerOfMass = evec3(0.0f, 0.0f, 0.0f);
+	rb.inertia = emat3::Zero();
 	rb.spatialInertia = smat6::Zero();
 	rb.fixed = false;
 	rb.parentID = -1;
@@ -64,29 +64,29 @@ rigidBody createRigidBody(){
 
 //Create rigid body from mass, center of mass (in body coords), and the radii of gyration at 
 //the center of mass
-rigidBody createRigidBody(const float& mass, const vec3& centerOfMass, const vec3& gyrationRadii, 	
+rigidBody createRigidBody(const float& mass, const evec3& centerOfMass, const evec3& gyrationRadii, 	
 						  const bool& fixed, const int& parentID){
-	mat3 inertia = createMat3(gyrationRadii[0], 0.0f, 0.0f,
+	emat3 inertia = createEmat3(gyrationRadii[0], 0.0f, 0.0f,
 						  	  0.0f, gyrationRadii[1], 0.0f,
 						  	  0.0f, 0.0f, gyrationRadii[2]);
 	return createRigidBody(mass, centerOfMass, inertia, fixed, parentID);
 }
 
 //Create rigid body from mass, center of mass, and inertia matrix
-rigidBody createRigidBody(const float& mass, const vec3& centerOfMass, const mat3& inertia, 
+rigidBody createRigidBody(const float& mass, const evec3& centerOfMass, const emat3& inertia, 
 						  const bool& fixed, const int& parentID){
 	rigidBody rb;
 	rb.fixed = fixed;
 	rb.mass = mass;
 	rb.centerOfMass = centerOfMass;
 	rb.inertia = inertia;
-	mat3 centerOfMassCrossed = createMat3(0.0f, -centerOfMass[2], centerOfMass[1],
+	emat3 centerOfMassCrossed = createEmat3(0.0f, -centerOfMass[2], centerOfMass[1],
 	         					 		  centerOfMass[2], 0.0f, -centerOfMass[0],
 	         						 	  -centerOfMass[1], centerOfMass[0], 0.0f);	
-	mat3 massCOMC = mass * centerOfMassCrossed;
-	mat3 massCOMCT = massCOMC.transpose();
-	mat3 parallelAxis = massCOMC * centerOfMassCrossed.transpose();
-	mat3 inertiaPA = inertia + parallelAxis;
+	emat3 massCOMC = mass * centerOfMassCrossed;
+	emat3 massCOMCT = massCOMC.transpose();
+	emat3 parallelAxis = massCOMC * centerOfMassCrossed.transpose();
+	emat3 inertiaPA = inertia + parallelAxis;
 	rb.spatialInertia = smat6(inertiaPA(0,0), inertiaPA(0,1), inertiaPA(0,2), 
 						 	  massCOMC(0, 0), massCOMC(0, 1), massCOMC(0, 2),
 						 	  inertiaPA(1,0), inertiaPA(1,1), inertiaPA(1,2), 
@@ -105,19 +105,19 @@ rigidBody createRigidBody(const float& mass, const vec3& centerOfMass, const mat
 //Transform is frame transformation from rb2's origin to rb1's origin
 rigidBody joinRigidBodies(const rigidBody& rb1, const rigidBody& rb2, const stransform6& transform){
 	float newMass = rb1.mass + rb2.mass;
-	vec3 rb2CenterOfMass = (transform.rotation.transpose() * rb2.centerOfMass) + transform.translation;
-	vec3 newCenterOfMass = (1.0f / newMass ) * (rb1.mass * rb1.centerOfMass + rb2.mass * rb2CenterOfMass);
-	mat3 rb2Inertia = rb2.spatialInertia.block<3,3>(0,0);
+	evec3 rb2CenterOfMass = (transform.rotation.transpose() * rb2.centerOfMass) + transform.translation;
+	evec3 newCenterOfMass = (1.0f / newMass ) * (rb1.mass * rb1.centerOfMass + rb2.mass * rb2CenterOfMass);
+	emat3 rb2Inertia = rb2.spatialInertia.block<3,3>(0,0);
 	//Transform inertia from rb2 origin to rb2 centerOfMAss
-	mat3 rb2COMCrossed = vectorCrossMatrix(rb2.centerOfMass);
-	mat3 rb2InertiaCOM = rb2Inertia - rb2.mass * rb2COMCrossed * rb2COMCrossed.transpose();
+	emat3 rb2COMCrossed = vectorCrossMatrix(rb2.centerOfMass);
+	emat3 rb2InertiaCOM = rb2Inertia - rb2.mass * rb2COMCrossed * rb2COMCrossed.transpose();
 	//Rotate rb2 inertia to align with frame of rb1, then transform rb2 inertia to origin frame of rb1
-	mat3 rb2InertiaCOMRotated = transform.rotation.transpose() * rb2InertiaCOM * transform.rotation;
-	mat3 rb2InertiaCOMRotatedToRb1 = parallelAxis(rb2InertiaCOMRotated, rb2.mass, rb2CenterOfMass);
+	emat3 rb2InertiaCOMRotated = transform.rotation.transpose() * rb2InertiaCOM * transform.rotation;
+	emat3 rb2InertiaCOMRotatedToRb1 = parallelAxis(rb2InertiaCOMRotated, rb2.mass, rb2CenterOfMass);
 	//Sum inertias and transform result to new center of mass
-	mat3 sumOfIntertias = rb1.spatialInertia.block<3,3>(0,0) + rb2InertiaCOMRotatedToRb1;
-	mat3 newCOMCrossed = vectorCrossMatrix(newCenterOfMass);
-	mat3 newInertia = sumOfIntertias - (newMass * newCOMCrossed * newCOMCrossed.transpose()); 
+	emat3 sumOfIntertias = rb1.spatialInertia.block<3,3>(0,0) + rb2InertiaCOMRotatedToRb1;
+	emat3 newCOMCrossed = vectorCrossMatrix(newCenterOfMass);
+	emat3 newInertia = sumOfIntertias - (newMass * newCOMCrossed * newCOMCrossed.transpose()); 
 	return createRigidBody(newMass, newCenterOfMass, newInertia, rb1.fixed, rb1.parentID);
 }
 }

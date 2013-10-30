@@ -105,27 +105,27 @@ class sinertia6{
 	public:
 		//Data
 		float mass;
-		vec3 centerOfMass;
-		mat3 inertia;
+		evec3 centerOfMass;
+		emat3 inertia;
 
 		//Operators and functions
 		sinertia6(){
 			mass = 0.0f;
-			centerOfMass = vec3::Zero();
-			inertia = mat3::Zero();
+			centerOfMass = evec3::Zero();
+			inertia = emat3::Zero();
 		}
 
-		sinertia6(const float& m, const vec3& com, const mat3& i){
+		sinertia6(const float& m, const evec3& com, const emat3& i){
 			mass = m;
 			centerOfMass = com;
 			inertia = i;
 		}
 
 		svec6 operator* (const svec6 &v) {
-			vec3 mv_upper(v[0], v[1], v[2]);
-			vec3 mv_lower(v[3], v[4], v[5]);
-			vec3 res_upper = inertia * vec3(v[0], v[1], v[2]) + centerOfMass.cross(mv_lower);
-			vec3 res_lower = mass * mv_lower - centerOfMass.cross(mv_upper);
+			evec3 mv_upper(v[0], v[1], v[2]);
+			evec3 mv_lower(v[3], v[4], v[5]);
+			evec3 res_upper = inertia * evec3(v[0], v[1], v[2]) + centerOfMass.cross(mv_lower);
+			evec3 res_lower = mass * mv_lower - centerOfMass.cross(mv_upper);
 			return svec6(res_upper[0], res_upper[1], res_upper[2],
 						 res_lower[0], res_lower[1], res_lower[2]);
 		}
@@ -136,22 +136,22 @@ class sinertia6{
 		}
 };
 
-//Compact version of a 6x6 spatial matrix used to store transformations in a 3x3 matrix and a vec3. 
+//Compact version of a 6x6 spatial matrix used to store transformations in a 3x3 matrix and a evec3. 
 //Matrix is for rotation, vector is for translation. We can do this since scale isn't needed.
 //This idea is borrowed directly from Martin Felis's implementation.
 class stransform6{
 	public:
 		//Data
-		mat3 rotation;
-		vec3 translation;
+		emat3 rotation;
+		evec3 translation;
 
 		//Operators and functions
 		stransform6(){
-			rotation = mat3::Identity();
-			translation = vec3::Zero();
+			rotation = emat3::Identity();
+			translation = evec3::Zero();
 		}
 
-		stransform6(const mat3& newRotation, const vec3& newTranslation){
+		stransform6(const emat3& newRotation, const evec3& newTranslation){
 			rotation = newRotation;
 			translation = newTranslation;
 		}
@@ -173,8 +173,8 @@ class stransform6{
 
 sinertia6 spatialMatrixToSpatialInertia(const smat6& m){
 	float mass = m(3,3);
-	vec3 centerOfMass = vec3(-m(1,5), m(0,5), -m(0,4));
-	mat3 inertia = m.block<3,3>(0,0);
+	evec3 centerOfMass = evec3(-m(1,5), m(0,5), -m(0,4));
+	emat3 inertia = m.block<3,3>(0,0);
 	return sinertia6(mass, centerOfMass, inertia);
 }
 
@@ -183,14 +183,14 @@ smat6 spatialInertiaToSpatialMatrix(const sinertia6& I){
 	m.block<3,3>(0,0) = I.inertia;
 	m.block<3,3>(0,3) = vectorCrossMatrix(I.centerOfMass);
 	m.block<3,3>(3,0) = -vectorCrossMatrix(I.centerOfMass);
-	m.block<3,3>(3,3) = mat3::Identity() * I.mass;
+	m.block<3,3>(3,3) = emat3::Identity() * I.mass;
 	return m;
 }
 
 svec6 applySpatialTransformToSpatialVector(const svec6& v, const stransform6& t){
-	vec3 v_translated(v[3] - (t.translation[1] * v[2]) + (t.translation[2] * v[1]),
-					  v[4] - (t.translation[2] * v[0]) + (t.translation[0] * v[2]),
-					  v[5] - (t.translation[0] * v[1]) + (t.translation[1] * v[0]));
+	evec3 v_translated(v[3] - (t.translation[1] * v[2]) + (t.translation[2] * v[1]),
+					   v[4] - (t.translation[2] * v[0]) + (t.translation[0] * v[2]),
+					   v[5] - (t.translation[0] * v[1]) + (t.translation[1] * v[0]));
 	svec6 v_rotated;
 	v_rotated[0] = (t.rotation(0,0) * v[0]) + (t.rotation(0,1) * v[1]) + (t.rotation(0,2) * v[2]);
 	v_rotated[1] = (t.rotation(1,0) * v[0]) + (t.rotation(1,1) * v[1]) + (t.rotation(1,2) * v[2]);
@@ -204,21 +204,21 @@ svec6 applySpatialTransformToSpatialVector(const svec6& v, const stransform6& t)
 	return v_rotated;
 }
 
-//sinertia6(const float& m, const vec3& com, const mat3& i){
+//sinertia6(const float& m, const evec3& com, const emat3& i){
 sinertia6 applySpatialTransformToSpatialInertia(const sinertia6& I, 
 													   const stransform6& t){
 	float mass = I.mass;
-	vec3 centerOfMass = t.rotation.transpose() * (I.centerOfMass / I.mass) + t.translation;
-	mat3 inertia = t.rotation.transpose() * I.inertia * t.rotation - 
-				   vectorCrossMatrix(t.translation) * 
-				   vectorCrossMatrix(t.rotation.transpose() * I.centerOfMass) -
-				   vectorCrossMatrix(t.rotation.transpose() * I.centerOfMass + t.translation * I.mass) * 
-				   vectorCrossMatrix(t.translation);
+	evec3 centerOfMass = t.rotation.transpose() * (I.centerOfMass / I.mass) + t.translation;
+	emat3 inertia = t.rotation.transpose() * I.inertia * t.rotation - 
+				    vectorCrossMatrix(t.translation) * 
+				    vectorCrossMatrix(t.rotation.transpose() * I.centerOfMass) -
+				    vectorCrossMatrix(t.rotation.transpose() * I.centerOfMass + t.translation * I.mass) * 
+				    vectorCrossMatrix(t.translation);
 	return sinertia6(mass, centerOfMass, inertia);
 }
 
 svec6 applySpatialTransformToTranspose(const svec6& v, const stransform6& t){
-	vec3 rotationTransposedV;
+	evec3 rotationTransposedV;
 	rotationTransposedV[0] = t.rotation(0,0) * v[3] + t.rotation(1,0) * v[4] + t.rotation(2,0) * v[5];
 	rotationTransposedV[1] = t.rotation(0,1) * v[3] + t.rotation(1,1) * v[4] + t.rotation(2,1) * v[5];
 	rotationTransposedV[2] = t.rotation(0,2) * v[3] + t.rotation(1,2) * v[4] + t.rotation(2,2) * v[5];
@@ -236,8 +236,8 @@ svec6 applySpatialTransformToTranspose(const svec6& v, const stransform6& t){
 }
 
 svec6 applySpatialTransformToAdjoint(const svec6& v, const stransform6& t){
-	vec3 transformedAdjoint = (t.rotation * (vec3(v[0], v[1], v[2])) - 
-					  		  (t.translation.cross(vec3(v[3], v[4], v[5]))));	
+	evec3 transformedAdjoint = (t.rotation * (evec3(v[0], v[1], v[2])) - 
+					  		   (t.translation.cross(evec3(v[3], v[4], v[5]))));	
 	svec6 adjoint;
 	adjoint[0] = transformedAdjoint[0];
 	adjoint[1] = transformedAdjoint[1];
@@ -249,37 +249,37 @@ svec6 applySpatialTransformToAdjoint(const svec6& v, const stransform6& t){
 }
 
 smat6 spatialTransformToSpatialMatrix(const stransform6& t){
-	mat3 Erx = t.rotation * createMat3(0.0f, -t.translation[2], t.translation[1],
-				   					   t.translation[2], 0.0f, -t.translation[0],
-				   					   -t.translation[1], t.translation[0], 0.0f);
+	emat3 Erx = t.rotation * createEmat3(0.0f, -t.translation[2], t.translation[1],
+				   					     t.translation[2], 0.0f, -t.translation[0],
+				   					     -t.translation[1], t.translation[0], 0.0f);
 	smat6 m;
 	m.block<3,3>(0,0) = t.rotation;
-	m.block<3,3>(0,3) = mat3::Zero();
+	m.block<3,3>(0,3) = emat3::Zero();
 	m.block<3,3>(3,0) = -Erx;
 	m.block<3,3>(3,3) = t.rotation;
 	return m;	
 }
 
 smat6 spatialTransformToSpatialMatrixAdjoint(const stransform6& t){
-	mat3 Erx = t.rotation * createMat3(0.0f, -t.translation[2], t.translation[1],
-				   					   t.translation[2], 0.0f, -t.translation[0],
-				   					   -t.translation[1], t.translation[0], 0.0f);
+	emat3 Erx = t.rotation * createEmat3(0.0f, -t.translation[2], t.translation[1],
+				   					     t.translation[2], 0.0f, -t.translation[0],
+				   					     -t.translation[1], t.translation[0], 0.0f);
 	smat6 m;
 	m.block<3,3>(0,0) = t.rotation;
 	m.block<3,3>(0,3) = -Erx;
-	m.block<3,3>(3,0) = mat3::Zero();
+	m.block<3,3>(3,0) = emat3::Zero();
 	m.block<3,3>(3,3) = t.rotation;
 	return m;	
 }
 
 smat6 spatialTransformToSpatialMatrixTranspose(const stransform6& t){
-	mat3 Erx = t.rotation * createMat3(0.0f, -t.translation[2], t.translation[1],
-				   					   t.translation[2], 0.0f, -t.translation[0],
-				   					   -t.translation[1], t.translation[0], 0.0f);
+	emat3 Erx = t.rotation * createEmat3(0.0f, -t.translation[2], t.translation[1],
+				   					     t.translation[2], 0.0f, -t.translation[0],
+				   					     -t.translation[1], t.translation[0], 0.0f);
 	smat6 m;
 	m.block<3,3>(0,0) = t.rotation.transpose();
 	m.block<3,3>(0,3) = -Erx.transpose();
-	m.block<3,3>(3,0) = mat3::Zero();
+	m.block<3,3>(3,0) = emat3::Zero();
 	m.block<3,3>(3,3) = t.rotation.transpose();
 	return m;	
 }

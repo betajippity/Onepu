@@ -120,8 +120,8 @@ int utilityCore::compareMilliseconds(int referenceTime){
 // GL Stuff
 //====================================
 
-void utilityCore::fovToPerspective(float fovy, float aspect, float zNear, vec2& xBounds, 
-                                   vec2& yBounds){
+void utilityCore::fovToPerspective(float fovy, float aspect, float zNear, evec2& xBounds, 
+                                   evec2& yBounds){
     yBounds[1] = zNear * tan(fovy*(float)PI/360.0f);
     yBounds[0] = -yBounds[1];
     xBounds[0] = yBounds[0]*aspect;

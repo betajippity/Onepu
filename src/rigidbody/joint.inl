@@ -54,7 +54,7 @@ struct joint{
 //Forward declarations for externed inlineable methods
 extern inline joint createJoint();
 extern inline joint createJoint(const vector<svec6>& axes, const jointType& type);
-extern inline joint createJoint(const vec3& axis, const jointType& type);
+extern inline joint createJoint(const evec3& axis, const jointType& type);
 extern inline joint createJoint(const svec6& axis0);
 extern inline joint createJoint(const svec6& axis0, const svec6& axis1);
 extern inline joint createJoint(const svec6& axis0, const svec6& axis1, const svec6& axis2);
@@ -79,7 +79,7 @@ joint createJoint(){
 	return j;
 }
 
-joint createJoint(const vec3& axis, const jointType& type){
+joint createJoint(const evec3& axis, const jointType& type){
 	joint j;
 	j.degreesOfFreedom = 1;
 	svec6 newAxis;

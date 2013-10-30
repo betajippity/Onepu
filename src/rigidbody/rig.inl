@@ -29,22 +29,22 @@ struct rig {
 	vector<int> parentIDs; //lambda
 	vector< vector<int> > childrenIDs; //mu
 	int numberOfDegreesOfFreedom;
-	vec3 rootForce;
+	evec3 rootForce;
 	vector<svec6> spatialVelocities; //v
 	vector<svec6> spatialAccelerations; //a
 	//joint data
 	vector<joint> joints;
 	vector<svec6> jointAxes; //S
 	vector<stransform6> parentToJointTransforms; //X_T
-	vector<mat4> stackedTransforms; //transforms directly from root to node position
+	vector<emat4> stackedTransforms; //transforms directly from root to node position
 	vector<int> fixedJointCounts;
 	//dynamics data
 	vector<svec6> velocityDrivenSpatialAccelerations; //c
 	vector<smat6> rbSpatialInertias; //IA
 	vector<svec6> spatialBiasForces; //pA
 	vector<svec6> tempUi; //U_i
-	vecX tempdi; //D_i
-	vecX tempu; //u
+	evecX tempdi; //D_i
+	evecX tempu; //u
 	vector<svec6> rbInternalForces; //f
 	vector<sinertia6> spatialInertiasPerRb; //Ic
 	//rb data
@@ -69,13 +69,13 @@ extern inline void propogateStackedTransforms(rig& r);
 
 void propogateStackedTransforms(rig& r){
 	for(int i=0; i<r.stackedTransforms.size(); i++){
-		r.stackedTransforms[i] = mat4::Identity();
+		r.stackedTransforms[i] = emat4::Identity();
 	}
 	for(int i=1; i<r.parentToJointTransforms.size(); i++){
-		vec3 t = r.parentToJointTransforms[i].translation;
-		mat4 trans = mat4::Identity();
+		evec3 t = r.parentToJointTransforms[i].translation;
+		emat4 trans = emat4::Identity();
 		trans(0,3) = t[0]; trans(1,3) = t[1]; trans(2,3) = t[2];
-		mat4 rotate = mat4::Identity();
+		emat4 rotate = emat4::Identity();
 		rotate.block<3,3>(0,0) = r.parentToJointTransforms[i].rotation;
 
 		r.stackedTransforms[i] = r.stackedTransforms[r.parentIDs[i]] * trans * rotate;
@@ -93,7 +93,7 @@ rig* createRig(){
 	r->numberOfDegreesOfFreedom = 0;
 
 	//set some initial velocities and whatnot
-	r->rootForce = vec3(0.0f, -9.8f, 0.0f); //Earth gravity!
+	r->rootForce = evec3(0.0f, -9.8f, 0.0f); //Earth gravity!
 	r->spatialVelocities.push_back(svec6(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f));
 	r->spatialAccelerations.push_back(svec6(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f));
 
@@ -101,17 +101,17 @@ rig* createRig(){
 	r->joints.push_back(createJoint());
 	r->jointAxes.push_back(svec6(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f));
 	r->parentToJointTransforms.push_back(stransform6());
-	r->stackedTransforms.push_back(mat4::Identity());
+	r->stackedTransforms.push_back(emat4::Identity());
 
 	//dynamics and temp stuff
 	r->velocityDrivenSpatialAccelerations.push_back(svec6(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f));
 	r->rbSpatialInertias.push_back(smat6::Identity());
 	r->spatialBiasForces.push_back(svec6(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f));
 	r->tempUi.push_back(svec6(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f));
-	r->tempdi = vecX::Zero(1);
-	r->tempu = vecX::Zero(1);
+	r->tempdi = evecX::Zero(1);
+	r->tempu = evecX::Zero(1);
 	r->rbInternalForces.push_back(svec6(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f));
-	sinertia6 rootSI(0.0f, vec3(0.0f, 0.0f, 0.0f), mat3::Zero());
+	sinertia6 rootSI(0.0f, evec3(0.0f, 0.0f, 0.0f), emat3::Zero());
 	r->spatialInertiasPerRb.push_back(rootSI);
 
 	//create root rb
@@ -143,7 +143,7 @@ int addBodyFixedJointToRig(rig& r, const int& parentID, const stransform6& joint
 int addBodyMultiJointToRig(rig& r, const int& parentID, const stransform6& jointFrame, const joint& j, 
 						   const rigidBody& rb){
 	//create ghost node for later use
-	rigidBody ghostRb = createRigidBody(0.0f, vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 0.0f, 0.0f), false, 
+	rigidBody ghostRb = createRigidBody(0.0f, evec3(0.0f, 0.0f, 0.0f), evec3(0.0f, 0.0f, 0.0f), false, 
 										parentID);
 	ghostRb.ghost = true;
 	//for each dof, add a ghost node
@@ -153,12 +153,12 @@ int addBodyMultiJointToRig(rig& r, const int& parentID, const stransform6& joint
 	stransform6 jointFrameTransform;
 	for(int i=0; i<dofCount; i++){
 		svec6 a = getJointAxis(j, i);
-		vec3 rotation(a[0], a[1], a[2]);
-		vec3 translation(a[3], a[4], a[5]);	
+		evec3 rotation(a[0], a[1], a[2]);
+		evec3 translation(a[3], a[4], a[5]);	
 		//determine whether joint is prismatic or revolute or non of the above
-		if(vec3(rotation-vec3(0,0,0)).norm()<=EPSILON){
+		if(evec3(rotation-evec3(0,0,0)).norm()<=EPSILON){
 			ghostJoint = createJoint(translation, jointPrismatic);
-		}else if(vec3(translation-vec3(0,0,0)).norm()<=EPSILON){
+		}else if(evec3(translation-evec3(0,0,0)).norm()<=EPSILON){
 			ghostJoint = createJoint(rotation, jointRevolute);
 		}	
 		//joint 0 is transformed by jointFrame, all other joints have zeroed transforms
@@ -206,14 +206,14 @@ int addBodyToRig(rig& r, const int& parentID, const stransform6& jointFrame, con
 	r.jointAxes.push_back(j.axis0);
 	//invert transform to child node's perspective
 	r.parentToJointTransforms.push_back(jointFrame*moveableParentTransform); 
-	r.stackedTransforms.push_back(mat4::Identity());
+	r.stackedTransforms.push_back(emat4::Identity());
 	//dynamics stuff
 	r.velocityDrivenSpatialAccelerations.push_back(svec6(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f));
 	r.rbSpatialInertias.push_back(rb.spatialInertia);
 	r.spatialBiasForces.push_back(svec6(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f));
 	r.tempUi.push_back(svec6(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f));
-	r.tempdi = vecX::Zero(r.bodies.size());
-	r.tempu = vecX::Zero(r.bodies.size());
+	r.tempdi = evecX::Zero(r.bodies.size());
+	r.tempu = evecX::Zero(r.bodies.size());
 	r.rbInternalForces.push_back(svec6(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f));
 	sinertia6 rbSI(rb.mass, rb.centerOfMass, rb.inertia);
 	r.spatialInertiasPerRb.push_back(rbSI);

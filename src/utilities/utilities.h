@@ -62,8 +62,8 @@ extern inline int getMilliseconds();
 extern inline int compareMilliseconds(int referenceTime);
 
 //Useful stuff for GL
-extern inline void fovToPerspective(float fovy, float aspect, float zNear, vec2& xBounds, 
-									vec2& yBounds);
+extern inline void fovToPerspective(float fovy, float aspect, float zNear, evec2& xBounds, 
+									evec2& yBounds);
 
 //IO Stuff
 extern inline std::string readFileAsString(std::string filename);
