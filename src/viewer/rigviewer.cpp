@@ -10,8 +10,9 @@
 using namespace viewerCore;
 using namespace spatialmathCore;
 
-rigviewer::rigviewer(){
+rigviewer::rigviewer(rigidbodyCore::rig* newr){
     resolution = vec2(1000, 1000);
+    r = newr;
 }
 
 rigviewer::~rigviewer(){
@@ -82,29 +83,47 @@ void rigviewer::mainLoop(){
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
 
-        glTranslatef(cam.translate[0], cam.translate[1], cam.translate[2]);
+        glTranslatef(cam.translate[0], cam.translate[1], cam.translate[2]-10);
         // apply the current rotation
         glRotatef(cam.rotate[0], 1, 0, 0);
         glRotatef(cam.rotate[1], 0, 1, 0);
         glRotatef(cam.rotate[2], 0, 0, 1);
         
-        for(int i=0; i<vbos.size(); i++){
-            glBindBuffer(GL_ARRAY_BUFFER, vbos[i].vboID);
-            glVertexPointer(3, GL_FLOAT, 0, NULL);
-            glEnableClientState(GL_VERTEX_ARRAY);
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-            glColor3f(vbos[i].color[0], vbos[i].color[1], vbos[i].color[2]);
-            if(vbos[i].type==QUADS){
-                glDrawArrays(GL_QUADS, 0, vbos[i].size/3);
-            }else if(vbos[i].type==TRIANGLES){
-                glDrawArrays(GL_TRIANGLES, 0, vbos[i].size/3);
-            }else if(vbos[i].type==LINES){
-                glDrawArrays(GL_LINES, 0, vbos[i].size/3);
-            }
-            glDisableClientState(GL_VERTEX_ARRAY);
+        // for(int i=0; i<vbos.size(); i++){
+        //     glBindBuffer(GL_ARRAY_BUFFER, vbos[i].vboID);
+        //     glVertexPointer(3, GL_FLOAT, 0, NULL);
+        //     glEnableClientState(GL_VERTEX_ARRAY);
+        //     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        //     glColor3f(vbos[i].color[0], vbos[i].color[1], vbos[i].color[2]);
+        //     if(vbos[i].type==QUADS){
+        //         glDrawArrays(GL_QUADS, 0, vbos[i].size/3);
+        //     }else if(vbos[i].type==TRIANGLES){
+        //         glDrawArrays(GL_TRIANGLES, 0, vbos[i].size/3);
+        //     }else if(vbos[i].type==LINES){
+        //         glDrawArrays(GL_LINES, 0, vbos[i].size/3);
+        //     }
+        //     glDisableClientState(GL_VERTEX_ARRAY);
+        // }        
+        GLUquadric* sphere;
+        sphere = gluNewQuadric();
+
+        for(int i=0; i<r->stackedTransforms.size(); i++){
+            
+            gluQuadricDrawStyle(sphere, GLU_SILHOUETTE);
+            glPushMatrix();
+                vec4 trans = r->stackedTransforms[i] * vec4(0,0,0,1);
+                glTranslatef(trans[0], trans[1], trans[2]);
+                glColor3f(1,1,1);
+                if(i==0){
+                    glColor3f(1,0,0);
+                    gluSphere(sphere, .25, 20, 20);
+                }else{
+                    gluSphere(sphere, .2, 20, 20);
+                }
+                
+            glPopMatrix();
         }
-       // drawRays();
-        
+
         glfwSwapBuffers(window);
         glfwPollEvents();
         updateInputs();

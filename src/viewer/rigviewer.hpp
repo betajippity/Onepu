@@ -16,8 +16,10 @@
 #include <stdio.h>
 #include <iostream>
 #include <vector>
+#include <map>
 #include <Eigen/Core>
 #include "../math/eigenmathutils.inl"
+#include "../rigidbody/rig.inl"
 
 enum vbotype{QUADS, TRIANGLES, LINES};
 
@@ -62,7 +64,7 @@ struct glCamera{
 
 class rigviewer {
 	public:
-		rigviewer();
+		rigviewer(rigidbodyCore::rig* newr);
 		~rigviewer();
 
 		void launch();
@@ -90,8 +92,8 @@ class rigviewer {
 		vec2 resolution;
 		GLFWwindow* window;
 		vector<vboData> vbos;
-
 		glCamera cam;
+		rigidbodyCore::rig* r;
 };
 }
 

@@ -19,7 +19,9 @@ namespace spatialmathCore {
 typedef VectorXf vecX;
 typedef Vector3f vec3;
 typedef Vector2f vec2;
+typedef Vector4f vec4;
 typedef Matrix3f mat3;
+typedef Matrix4f mat4;
 
 //====================================
 // Struct and Function Declarations

@@ -75,7 +75,8 @@ elseif(WIN32)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /arch:SSE2")
 endif()
 
-set(SOURCE_FILES "src/main.cpp" "src/viewer/rigviewer.cpp")
+set(SOURCE_FILES "src/main.cpp" 
+				 "src/viewer/rigviewer.cpp")
 
 add_executable(onepu ${SOURCE_FILES})
 
