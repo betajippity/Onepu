@@ -89,6 +89,7 @@ void featherstoneABA(rigCore::rig& r, const evecX& jointStateVector, const evecX
 	evecX d = r.tempdi;
 	evecX u = r.tempu;
 	vector<svec6> S = r.jointAxes;
+	vector<svec6> a = r.spatialAccelerations;
 
 	svec6 sgravity(0.0f, 0.0f, 0.0f, r.rootForce[0], r.rootForce[1], r.rootForce[2]);
 	v[0] = v[0].Zero();
@@ -143,6 +144,25 @@ void featherstoneABA(rigCore::rig& r, const evecX& jointStateVector, const evecX
 		}
 	}
 
+	a[0] = sgravity*-1.0f; //External forces, aka gravity!
+	cout << a[0] << endl;
+
+	//Third loop: calculate accelerations
+	for(int i=1; i<numberOfBodies; i++){
+		int lambda = r.parentIDs[i];
+		stransform6 Xlambdatemp = Xlambda[i];
+
+		a[i] = applySpatialTransformToSpatialVector(a[lambda], Xlambdatemp) + c[i];
+
+		cout << a[i].transpose() << endl;
+
+		Qdotdot[i-1] = (1.0f/d[i]) * (u[i] - U[i].dot(a[i]));
+		a[i] = a[i] + S[i] * Qdotdot[i - 1];
+
+		cout << Qdotdot[i-1] << endl;
+
+	}
+
 	//assign things back to original names
 	jointAccelerationVector = Qdotdot;
 	r.spatialVelocities = v;
@@ -156,6 +176,7 @@ void featherstoneABA(rigCore::rig& r, const evecX& jointStateVector, const evecX
 	r.tempdi = d;
 	r.tempu = u;
 	r.jointAxes = S;
+	r.spatialAccelerations = a;
 }
 }
 
