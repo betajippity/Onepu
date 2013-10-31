@@ -18,7 +18,7 @@ using namespace std;
 using namespace Eigen;
 using namespace spatialmathCore;
 
-namespace rigidbodyCore {
+namespace rigCore {
 //====================================
 // Struct and Function Declarations
 //====================================
@@ -77,9 +77,7 @@ void propogateStackedTransforms(rig& r){
 		trans(0,3) = t[0]; trans(1,3) = t[1]; trans(2,3) = t[2];
 		emat4 rotate = emat4::Identity();
 		rotate.block<3,3>(0,0) = r.parentToJointTransforms[i].rotation;
-
 		r.stackedTransforms[i] = r.stackedTransforms[r.parentIDs[i]] * trans * rotate;
-		cout << r.stackedTransforms[i] << endl;
 	}
 }
 

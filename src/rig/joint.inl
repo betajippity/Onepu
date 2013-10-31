@@ -19,7 +19,7 @@ using namespace std;
 using namespace Eigen;
 using namespace spatialmathCore;
 
-namespace rigidbodyCore {
+namespace rigCore {
 
 //====================================
 // Struct and Function Declarations
@@ -191,6 +191,6 @@ joint createJoint(const vector<svec6>& axes, const jointType& type){
 // Eigen Specialization Stuff
 //====================================
 
-EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(rigidbodyCore::joint);
+EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(rigCore::joint);
 
 #endif

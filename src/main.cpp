@@ -7,13 +7,13 @@
 #include <Eigen/Core>
 #include "math/spatialmath.inl"
 #include "math/spatialmathutils.inl"
-#include "rigidbody/rig.inl"
+#include "rig/rig.inl"
 #include "viewer/rigviewer.hpp"
 
 using namespace std;
 using namespace Eigen;
 using namespace spatialmathCore;
-using namespace rigidbodyCore;
+using namespace rigCore;
 
 int main(int argc, char** argv){
 
@@ -25,7 +25,7 @@ int main(int argc, char** argv){
 	cout << "" << endl;
 
 	// rigidbodyCore::rig test = rigidbodyCore::createRig();
-	rigidbodyCore::rig* test = rigidbodyCore::createRig();
+	rigCore::rig* test = rigCore::createRig();
 	rigidBody rb1 = createRigidBody(1.0f, evec3(0.5f, 0.0f, 0.0f), evec3(1,1,1), false, 0);
 	joint j1 = createJoint(evec3(0,0,1), jointRevolute);
 	int rb1ID = addBodyToRig(*test, 0, createSpatialRotate(17,2), j1, rb1);
@@ -45,7 +45,7 @@ int main(int argc, char** argv){
 				test->parentToJointTransforms[i].translation[2] << endl;;
 	}
 	//rigidBody rb3 = createRigidBody(dd);
-	 rigidbodyCore::propogateStackedTransforms(*test);
+	 
 	viewerCore::rigviewer* viewer = new viewerCore::rigviewer(test); 
 	viewer->launch();
 }

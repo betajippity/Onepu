@@ -20,8 +20,10 @@ typedef VectorXf evecX;
 typedef Vector3f evec3;
 typedef Vector2f evec2;
 typedef Vector4f evec4;
+typedef Matrix2f emat2;
 typedef Matrix3f emat3;
 typedef Matrix4f emat4;
+typedef MatrixXf ematX;
 
 //====================================
 // Struct and Function Declarations

@@ -19,7 +19,7 @@
 #include <map>
 #include <Eigen/Core>
 #include "../math/eigenmathutils.inl"
-#include "../rigidbody/rig.inl"
+#include "../physics/featherstone.inl"
 #include "../utilities/utilities.h"
 
 enum vbotype{QUADS, TRIANGLES, LINES};
@@ -66,7 +66,7 @@ struct glCamera{
 
 class rigviewer {
 	public:
-		rigviewer(rigidbodyCore::rig* newr);
+		rigviewer(rigCore::rig* newr);
 		~rigviewer();
 
 		void launch();
@@ -95,7 +95,7 @@ class rigviewer {
 		GLFWwindow* window;
 		vector<vboData> vbos;
 		glCamera cam;
-		rigidbodyCore::rig* r;
+		rigCore::rig* r;
 };
 }
 

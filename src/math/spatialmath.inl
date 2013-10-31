@@ -21,6 +21,7 @@ namespace spatialmathCore {
 //====================================
 // Class and Function Declarations
 //====================================
+	
 class svec6;
 class smat6;
 class sinertia6;

@@ -9,7 +9,7 @@
 using namespace viewerCore;
 using namespace spatialmathCore;
 
-rigviewer::rigviewer(rigidbodyCore::rig* newr){
+rigviewer::rigviewer(rigCore::rig* newr){
     resolution = vec2(1000, 1000);
     r = newr;
 }
@@ -28,6 +28,7 @@ void rigviewer::consoleThread(){
         // cout << "Console test, hit enter: \n";
         // cin >> choice;
         // cout << choice << endl;
+        
     }   
 }
 
@@ -76,6 +77,9 @@ void rigviewer::updateInputs(){
 
 void rigviewer::mainLoop(){
     while (!glfwWindowShouldClose(window)){
+
+        rigCore::propogateStackedTransforms(*r);
+
         glClearColor(0.125, 0.125, 0.125, 1.0);
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -103,24 +107,24 @@ void rigviewer::mainLoop(){
         //     }
         //     glDisableClientState(GL_VERTEX_ARRAY);
         // }        
-        GLUquadric* sphere;
-        sphere = gluNewQuadric();
+        // GLUquadric* sphere;
+        // sphere = gluNewQuadric();
 
         for(int i=0; i<r->stackedTransforms.size(); i++){
             
-            gluQuadricDrawStyle(sphere, GLU_SILHOUETTE);
-            glPushMatrix();
-                evec4 trans = r->stackedTransforms[i] * evec4(0,0,0,1);
-                glTranslatef(trans[0], trans[1], trans[2]);
-                glColor3f(1,1,1);
-                if(i==0){
-                    glColor3f(1,0,0);
-                    gluSphere(sphere, .25, 20, 20);
-                }else{
-                    gluSphere(sphere, .2, 20, 20);
-                }
+            // gluQuadricDrawStyle(sphere, GLU_SILHOUETTE);
+            // glPushMatrix();
+            //     evec4 trans = r->stackedTransforms[i] * evec4(0,0,0,1);
+            //     glTranslatef(trans[0], trans[1], trans[2]);
+            //     glColor3f(1,1,1);
+            //     if(i==0){
+            //         glColor3f(1,0,0);
+            //         gluSphere(sphere, .25, 20, 20);
+            //     }else{
+            //         gluSphere(sphere, .2, 20, 20);
+            //     }
                 
-            glPopMatrix();
+            // glPopMatrix();
         }
 
         glfwSwapBuffers(window);

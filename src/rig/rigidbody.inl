@@ -18,7 +18,7 @@ using namespace std;
 using namespace Eigen;
 using namespace spatialmathCore;
 
-namespace rigidbodyCore {
+namespace rigCore {
 //====================================
 // Struct and Function Declarations
 //====================================
@@ -126,6 +126,6 @@ rigidBody joinRigidBodies(const rigidBody& rb1, const rigidBody& rb2, const stra
 // Eigen Specialization Stuff
 //====================================
 
-EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(rigidbodyCore::rigidBody);
+EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(rigCore::rigidBody);
 
 #endif
