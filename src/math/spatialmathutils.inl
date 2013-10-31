@@ -36,8 +36,8 @@ stransform6 createSpatialTranslate(const evec3& t){
 
 //angle is in degrees
 stransform6 createSpatialRotate(const float& angle, const evec3& axis){
-	float s = sin(angle*PI/180.0f);
-	float c = cos(angle*PI/180.0f);
+	float s = sin(angle);
+	float c = cos(angle);
 	emat3 r  = createEmat3(axis[0] * axis[0] * (1.0f - c) + c,
 						   axis[1] * axis[0] * (1.0f - c) + axis[2] * s,
 						   axis[0] * axis[2] * (1.0f - c) - axis[1] * s,
@@ -53,8 +53,8 @@ stransform6 createSpatialRotate(const float& angle, const evec3& axis){
 //for axis, 0 = x-axis, 1 = y-axis, 2 = z-axis, angle is in degrees
 stransform6 createSpatialRotate(const float& angle, const int& axisID){
 	int rotationAxis = max(min(2, axisID),0);
-	float s = sin(angle*PI/180.0f);
-	float c = cos(angle*PI/180.0f);
+	float s = sin(angle);
+	float c = cos(angle);
 	stransform6 result;
 	if(rotationAxis==0){
 		result = stransform6(createEmat3(1.0f, 0.0f, 0.0f, 

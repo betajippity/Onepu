@@ -9,6 +9,7 @@
 
 #include <Eigen/Core>
 #include "../math/spatialmath.inl"
+#include "../math/spatialmathutils.inl"
 #include "rigidbody.inl"
 #include "joint.inl"
 
@@ -61,13 +62,13 @@ extern inline int addBodyFixedJointToRig(rig& r, const int& parentID, const stra
 							   			 const rigidBody& rb);
 extern inline int addBodyMultiJointToRig(rig& r, const int& parentID, const stransform6& jointFrame,
 							   			 const joint& j, const rigidBody& rb);
-extern inline void propogateStackedTransforms(rig& r);
+extern inline void propogateStackedTransforms(rig& r, const evecX& jointStateVector);
 
 //====================================
 // Function Implementations
 //====================================
 
-void propogateStackedTransforms(rig& r){
+void propogateStackedTransforms(rig& r, const evecX& Q){
 	for(int i=0; i<r.stackedTransforms.size(); i++){
 		r.stackedTransforms[i] = emat4::Identity();
 	}
@@ -77,7 +78,15 @@ void propogateStackedTransforms(rig& r){
 		trans(0,3) = t[0]; trans(1,3) = t[1]; trans(2,3) = t[2];
 		emat4 rotate = emat4::Identity();
 		rotate.block<3,3>(0,0) = r.parentToJointTransforms[i].rotation;
-		r.stackedTransforms[i] = r.stackedTransforms[r.parentIDs[i]] * trans * rotate;
+
+		evec3 axis = evec3(r.jointAxes[i][0], r.jointAxes[i][1], r.jointAxes[i][2]);
+		stransform6 Qr = createSpatialRotate(-Q[i-1], axis);
+		emat4 qrotate = emat4::Identity();
+		qrotate.block<3,3>(0,0) = Qr.rotation;
+
+		// cout << Q[i-1] << endl;
+
+		r.stackedTransforms[i] = r.stackedTransforms[r.parentIDs[i]] * trans * rotate * qrotate;
 	}
 }
 

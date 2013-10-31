@@ -29,10 +29,22 @@ extern inline void featherstoneABA(rigCore::rig& r, const evecX& jointStateVecto
 extern inline void jcalc(rigCore::rig& r, const int& jointID, stransform6& jointTransform, 
 						 svec6& motionSubspace, svec6& jointVelocity, svec6& jointAcceleration, 
 						 const float& state, const float& velocity);
+extern inline void integrateVelocities(rigCore::rig& r, evecX& jointStateVector, 
+								   	   evecX& jointVelocityVector, const evecX& jointAccelerationVector,
+								   	   const float& timestep);
 
 //====================================
 // Function Implementations
 //====================================
+
+void integrateVelocities(rigCore::rig& r, evecX& Q, evecX& Qd, const evecX& Qdd, const float& timestep){
+	for(int i=0; i<r.numberOfDegreesOfFreedom; i++){
+		Qd[i] = Qd[i]+Qdd[i]*timestep;
+		Q[i] = Q[i]+Qd[i]*timestep;
+		//Q[i] = ((Q[i]/TWO_PI) - floor(Q[i]/TWO_PI))*TWO_PI;
+	}
+	propogateStackedTransforms(r, Q);
+}
 
 void jcalc(rigCore::rig& r, const int& jointID, stransform6& jointTransform, svec6& motionSubspace, 
 		   svec6& jointVelocity, svec6& jointAcceleration, const float& state, const float& velocity){
@@ -48,7 +60,6 @@ void jcalc(rigCore::rig& r, const int& jointID, stransform6& jointTransform, sve
 	//set joint axis and joint acceleration for rhenomic joints (RBDA pg. 55)
 	S = j.axis0;
 	cj = svec6::Zero();
-
 	//calculate joint transforms
 	if(j.type==rigCore::jointPrismatic){
 		evec3 trans = evec3(j.axis0[3]*q, j.axis0[4]*q, j.axis0[5]*q);
@@ -58,11 +69,6 @@ void jcalc(rigCore::rig& r, const int& jointID, stransform6& jointTransform, sve
 		Xj = createSpatialRotate(q, rotate);
 	}
 	vj = S*qdot;
-
-	std::cout << "jcalc " << jointID << std::endl;
-	std::cout << vj.transpose() << std::endl;
-	std::cout << Xj.translation.transpose() << std::endl;
-	std::cout << Xj.rotation << std::endl;
 
 	//assign things back to original names
 	motionSubspace = S;
@@ -114,38 +120,31 @@ void featherstoneABA(rigCore::rig& r, const evecX& jointStateVector, const evecX
 
 		v[i] = applySpatialTransformToSpatialVector(v[lambda], Xlambda[i]) + vj;
 
-		cout << v[i].transpose() << endl;
-
 		c[i] = cj + crossm(v[i],vj);
 		IA[i] = r.bodies[i].spatialInertia;
 		pA[i] = crossf(v[i], IA[i]*v[i]);
-
-		cout << c[i].transpose() << endl;
-		cout << IA[i] << endl;
-		cout << pA[i].transpose() << endl;
 	}
 
 	//Second loop: calculate articulated-body inertias and bias forces
 	for(int i=numberOfBodies-1; i>0; i--){
+
 		U[i] = IA[i] * S[i];
 		d[i] = S[i].dot(U[i]);
 		u[i] = tau[i-1] - S[i].dot(pA[i]);
 
 		int lambda = r.parentIDs[i];
 		if(lambda!=0){
+
 			smat6 tempIA = IA[i] - U[i] * (U[i] / d[i]).transpose();
 			svec6 temppA = pA[i] + tempIA * c[i] + U[i] * u[i] / d[i];
+
 			IA[lambda].noalias() += spatialTransformToSpatialMatrixTranspose(Xlambda[i]) * tempIA * 
 									spatialTransformToSpatialMatrix(Xlambda[i]);
 			pA[lambda].noalias() += applySpatialTransformToTranspose(temppA, Xlambda[i]);
-
-			cout << IA[lambda] << endl;
-			cout << pA[lambda].transpose() << endl;
 		}
 	}
 
 	a[0] = sgravity*-1.0f; //External forces, aka gravity!
-	cout << a[0] << endl;
 
 	//Third loop: calculate accelerations
 	for(int i=1; i<numberOfBodies; i++){
@@ -154,13 +153,11 @@ void featherstoneABA(rigCore::rig& r, const evecX& jointStateVector, const evecX
 
 		a[i] = applySpatialTransformToSpatialVector(a[lambda], Xlambdatemp) + c[i];
 
-		cout << a[i].transpose() << endl;
-
 		Qdotdot[i-1] = (1.0f/d[i]) * (u[i] - U[i].dot(a[i]));
+
+		//cout << a[i].transpose() << endl;
+
 		a[i] = a[i] + S[i] * Qdotdot[i - 1];
-
-		cout << Qdotdot[i-1] << endl;
-
 	}
 
 	//assign things back to original names

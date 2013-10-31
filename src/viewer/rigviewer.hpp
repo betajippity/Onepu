@@ -95,7 +95,13 @@ class rigviewer {
 		GLFWwindow* window;
 		vector<vboData> vbos;
 		glCamera cam;
+
 		rigCore::rig* r;
+		float timestep;
+		evecX Q;
+		evecX QDot; 
+		evecX Tau;
+		evecX QDDot;
 };
 }
 

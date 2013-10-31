@@ -12,6 +12,12 @@ using namespace spatialmathCore;
 rigviewer::rigviewer(rigCore::rig* newr){
     resolution = vec2(1000, 1000);
     r = newr;
+
+    timestep = .01f;
+    Q = evecX::Zero(r->numberOfDegreesOfFreedom);
+    QDot = evecX::Zero(r->numberOfDegreesOfFreedom);
+    Tau = evecX::Zero(r->numberOfDegreesOfFreedom);
+    QDDot = evecX::Zero(r->numberOfDegreesOfFreedom);
 }
 
 rigviewer::~rigviewer(){
@@ -76,9 +82,22 @@ void rigviewer::updateInputs(){
 }
 
 void rigviewer::mainLoop(){
+    // physicsCore::featherstoneABA(*r, Q, QDot, QDDot, Tau);
+    // physicsCore::integrateVelocities(*r, Q, QDot, QDDot, timestep);
+
+   // cout << QDDot << endl;
+
+    // physicsCore::featherstoneABA(*r, Q, QDot, QDDot, Tau);
+    // physicsCore::integrateVelocities(*r, Q, QDot, QDDot, timestep);
+
+    //cout << QDDot << endl;
+
     while (!glfwWindowShouldClose(window)){
 
-        rigCore::propogateStackedTransforms(*r);
+       physicsCore::featherstoneABA(*r, Q, QDot, QDDot, Tau);
+        physicsCore::integrateVelocities(*r, Q, QDot, QDDot, timestep);
+ 
+        // cout << Q[0] << " " << Q[1] << " " << Q[2] << endl;
 
         glClearColor(0.125, 0.125, 0.125, 1.0);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -107,24 +126,34 @@ void rigviewer::mainLoop(){
         //     }
         //     glDisableClientState(GL_VERTEX_ARRAY);
         // }        
-        // GLUquadric* sphere;
-        // sphere = gluNewQuadric();
+        GLUquadric* sphere;
+        sphere = gluNewQuadric();
 
         for(int i=0; i<r->stackedTransforms.size(); i++){
             
-            // gluQuadricDrawStyle(sphere, GLU_SILHOUETTE);
-            // glPushMatrix();
-            //     evec4 trans = r->stackedTransforms[i] * evec4(0,0,0,1);
-            //     glTranslatef(trans[0], trans[1], trans[2]);
-            //     glColor3f(1,1,1);
-            //     if(i==0){
-            //         glColor3f(1,0,0);
-            //         gluSphere(sphere, .25, 20, 20);
-            //     }else{
-            //         gluSphere(sphere, .2, 20, 20);
-            //     }
-                
-            // glPopMatrix();
+            gluQuadricDrawStyle(sphere, GLU_SILHOUETTE);
+            glPushMatrix();
+                evec4 trans = r->stackedTransforms[i] * evec4(0,0,0,1);
+                glTranslatef(trans[0], trans[1], trans[2]);
+                glColor3f(1,1,1);
+                if(i==0){
+                    glColor3f(1,0,0);
+                    gluSphere(sphere, .25, 20, 20);
+                }else{
+                    gluSphere(sphere, .2, 20, 20);
+                }
+            glPopMatrix();
+
+            if(i>0){
+             evec4 trans2 = r->stackedTransforms[i-1] * evec4(0,0,0,1);
+
+                    glLineWidth(2.5); 
+                    glColor3f(1.0, 0.0, 0.0);
+                    glBegin(GL_LINES);
+                    glVertex3f(trans[0], trans[1], trans[2]);
+                    glVertex3f(trans2[0], trans2[1], trans2[2]);
+                    glEnd();
+                }
         }
 
         glfwSwapBuffers(window);
