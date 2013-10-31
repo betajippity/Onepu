@@ -85,6 +85,10 @@ void featherstoneABA(rigCore::rig& r, const evecX& jointStateVector, const evecX
 	vector<svec6> c = r.velocityDrivenSpatialAccelerations;
 	vector<smat6> IA = r.rbSpatialInertias;
 	vector<svec6> pA = r.spatialBiasForces;
+	vector<svec6> U = r.tempUi;
+	evecX d = r.tempdi;
+	evecX u = r.tempu;
+	vector<svec6> S = r.jointAxes;
 
 	svec6 sgravity(0.0f, 0.0f, 0.0f, r.rootForce[0], r.rootForce[1], r.rootForce[2]);
 	v[0] = v[0].Zero();
@@ -120,7 +124,24 @@ void featherstoneABA(rigCore::rig& r, const evecX& jointStateVector, const evecX
 		cout << pA[i].transpose() << endl;
 	}
 
+	//Second loop: calculate articulated-body inertias and bias forces
+	for(int i=numberOfBodies-1; i>0; i--){
+		U[i] = IA[i] * S[i];
+		d[i] = S[i].dot(U[i]);
+		u[i] = tau[i-1] - S[i].dot(pA[i]);
 
+		int lambda = r.parentIDs[i];
+		if(lambda!=0){
+			smat6 tempIA = IA[i] - U[i] * (U[i] / d[i]).transpose();
+			svec6 temppA = pA[i] + tempIA * c[i] + U[i] * u[i] / d[i];
+			IA[lambda].noalias() += spatialTransformToSpatialMatrixTranspose(Xlambda[i]) * tempIA * 
+									spatialTransformToSpatialMatrix(Xlambda[i]);
+			pA[lambda].noalias() += applySpatialTransformToTranspose(temppA, Xlambda[i]);
+
+			cout << IA[lambda] << endl;
+			cout << pA[lambda].transpose() << endl;
+		}
+	}
 
 	//assign things back to original names
 	jointAccelerationVector = Qdotdot;
@@ -131,6 +152,10 @@ void featherstoneABA(rigCore::rig& r, const evecX& jointStateVector, const evecX
 	r.velocityDrivenSpatialAccelerations = c;
 	r.rbSpatialInertias = IA;
 	r.spatialBiasForces = pA;
+	r.tempUi = U;
+	r.tempdi = d;
+	r.tempu = u;
+	r.jointAxes = S;
 }
 }
 
