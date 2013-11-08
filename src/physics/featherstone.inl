@@ -11,6 +11,7 @@
 #include "../math/spatialmath.inl"
 #include "../math/spatialmathutils.inl"
 #include "../rig/rig.inl"
+#include <omp.h>
 
 #define EIGEN_DEFAULT_TO_ROW_MAJOR
 
@@ -41,7 +42,6 @@ void integrateVelocities(rigCore::rig& r, evecX& Q, evecX& Qd, const evecX& Qdd,
 	for(int i=0; i<r.numberOfDegreesOfFreedom; i++){
 		Qd[i] = Qd[i]+Qdd[i]*timestep;
 		Q[i] = Q[i]+Qd[i]*timestep;
-		//Q[i] = ((Q[i]/TWO_PI) - floor(Q[i]/TWO_PI))*TWO_PI;
 	}
 	propogateStackedTransforms(r, Q);
 }
@@ -144,19 +144,14 @@ void featherstoneABA(rigCore::rig& r, const evecX& jointStateVector, const evecX
 		}
 	}
 
-	a[0] = sgravity*-1.0f; //External forces, aka gravity!
+	a[0] = sgravity; //External forces, aka gravity!
 
 	//Third loop: calculate accelerations
 	for(int i=1; i<numberOfBodies; i++){
 		int lambda = r.parentIDs[i];
 		stransform6 Xlambdatemp = Xlambda[i];
-
 		a[i] = applySpatialTransformToSpatialVector(a[lambda], Xlambdatemp) + c[i];
-
 		Qdotdot[i-1] = (1.0f/d[i]) * (u[i] - U[i].dot(a[i]));
-
-		//cout << a[i].transpose() << endl;
-
 		a[i] = a[i] + S[i] * Qdotdot[i - 1];
 	}
 

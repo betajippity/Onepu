@@ -80,7 +80,7 @@ void propogateStackedTransforms(rig& r, const evecX& Q){
 		rotate.block<3,3>(0,0) = r.parentToJointTransforms[i].rotation;
 
 		evec3 axis = evec3(r.jointAxes[i][0], r.jointAxes[i][1], r.jointAxes[i][2]);
-		stransform6 Qr = createSpatialRotate(-Q[i-1], axis);
+		stransform6 Qr = createSpatialRotate(Q[i-1], axis);
 		emat4 qrotate = emat4::Identity();
 		qrotate.block<3,3>(0,0) = Qr.rotation;
 

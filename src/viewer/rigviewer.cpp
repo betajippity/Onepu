@@ -18,6 +18,8 @@ rigviewer::rigviewer(rigCore::rig* newr){
     QDot = evecX::Zero(r->numberOfDegreesOfFreedom);
     Tau = evecX::Zero(r->numberOfDegreesOfFreedom);
     QDDot = evecX::Zero(r->numberOfDegreesOfFreedom);
+
+    start = false;
 }
 
 rigviewer::~rigviewer(){
@@ -64,6 +66,7 @@ void rigviewer::updateInputs(){
         if(glfwGetKey(window, GLFW_KEY_RIGHT_ALT) == GLFW_PRESS || 
            glfwGetKey(window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS){
             doCamera = true;
+            start = true;
         }
         if(doCamera==true){
             if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == 1){
@@ -82,30 +85,19 @@ void rigviewer::updateInputs(){
 }
 
 void rigviewer::mainLoop(){
-    // physicsCore::featherstoneABA(*r, Q, QDot, QDDot, Tau);
-    // physicsCore::integrateVelocities(*r, Q, QDot, QDDot, timestep);
-
-   // cout << QDDot << endl;
-
-    // physicsCore::featherstoneABA(*r, Q, QDot, QDDot, Tau);
-    // physicsCore::integrateVelocities(*r, Q, QDot, QDDot, timestep);
-
-    //cout << QDDot << endl;
-
+    physicsCore::integrateVelocities(*r, Q, QDot, QDDot, timestep);
     while (!glfwWindowShouldClose(window)){
-
-       physicsCore::featherstoneABA(*r, Q, QDot, QDDot, Tau);
+        if(start){
+        physicsCore::featherstoneABA(*r, Q, QDot, QDDot, Tau);
         physicsCore::integrateVelocities(*r, Q, QDot, QDDot, timestep);
- 
-        // cout << Q[0] << " " << Q[1] << " " << Q[2] << endl;
-
+    }
         glClearColor(0.125, 0.125, 0.125, 1.0);
         glClear(GL_COLOR_BUFFER_BIT);
 
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
 
-        glTranslatef(cam.translate.x, cam.translate.y, cam.translate.z-10.0f);
+        glTranslatef(cam.translate.x, cam.translate.y, cam.translate.z-50.0f);
         // apply the current rotation
         glRotatef(cam.rotate.x, 1, 0, 0);
         glRotatef(cam.rotate.y, 0, 1, 0);
@@ -211,7 +203,7 @@ void rigviewer::init(){
     vec2 xBounds;
     vec2 yBounds;
     utilityCore::fovToPerspective(fov.x, 1, 1, xBounds, yBounds); 
-    glFrustum(xBounds[0], xBounds[1], yBounds[0], yBounds[1], 1, 500);
+    glFrustum(xBounds[0], xBounds[1], yBounds[0], yBounds[1], 1, 50000);
     glMatrixMode(GL_MODELVIEW);
 
 }

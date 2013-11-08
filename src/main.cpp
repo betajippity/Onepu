@@ -24,6 +24,8 @@ int main(int argc, char** argv){
 	cout << "===================================================" << endl;
 	cout << "" << endl;
 
+
+
 	rigCore::rig* test = rigCore::createRig();
 	rigidBody rb1 = createRigidBody(1.0f, evec3(0.5f, 0.0f, 0.0f), evec3(1,1,1), false, 0);
 	joint j1 = createJoint(evec3(0,0,1), jointRevolute);
@@ -42,7 +44,7 @@ int main(int argc, char** argv){
 	// int rb4ID = addBodyToRig(*test, rb1ID, createSpatialTranslate(evec3(0,1,0)), j4, rb4);
 
 
-	for(int i=3; i<1000; i++){
+	for(int i=3; i<500; i++){
 
 		rigidBody rb4 = createRigidBody(1.0f, evec3(i + 0.5f, 0.0f, 0.0f), evec3(1,1,1), false, rb3ID);
 		joint j4 = createJoint(evec3(0,0,1), jointRevolute);
@@ -50,9 +52,7 @@ int main(int argc, char** argv){
 
 	}
 
-	// rigidBody rb4 = createRigidBody(0.0f, evec3(0.5f, 0.0f, 0.0f), evec3(1,1,1), false, rb3ID);
-	// joint j4 = createJoint(evec3(0,0,1), jointRevolute);
-	// int rb4ID = addBodyToRig(*test, rb3ID, createSpatialTranslate(evec3(1,0,0)), j4, rb4);
+
 
 	test->rootForce = evec3 (0,-9.81f, 0);
 

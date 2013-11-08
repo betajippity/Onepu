@@ -102,6 +102,8 @@ class rigviewer {
 		evecX QDot; 
 		evecX Tau;
 		evecX QDDot;
+
+		bool start;
 };
 }
 
