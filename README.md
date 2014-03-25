@@ -21,5 +21,5 @@ All external libraries/code can be found bundled together in my [Nuparu](https:/
 Building
 --------
 
-Onepu can be built via [CMake](http://www.cmake.org/) (and has been tested) on OSX, Windows, or Fedora. Latest support Nuparu version is v0.1.14.09. 
+Onepu can be built via [CMake](http://www.cmake.org/) (and has been tested) on OSX, Windows, or Fedora. Requires Nuparu v0.1.14.09. 
 
